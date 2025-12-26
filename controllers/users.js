@@ -17,7 +17,7 @@ module.exports.signup = async (req, res, next) => {
       if (err) {
         return next(err)
       }
-      req.flash("success", "Welcome to StayHive!")
+      req.flash("success", "Welcome to RentSphere!")
       res.redirect("/listings")
     })
   } catch (e) {
@@ -27,7 +27,7 @@ module.exports.signup = async (req, res, next) => {
 }
 
 module.exports.login = async (req, res) => {
-  req.flash("success", "Welcome back to StayHive!")
+  req.flash("success", "Welcome back to RentSphere!")
   const redirectUrl = res.locals.redirectUrl || "/listings"
   res.redirect(redirectUrl)
 }

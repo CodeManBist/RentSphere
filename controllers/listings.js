@@ -147,7 +147,7 @@ module.exports.createListing = async (req, res, next) => {
 
       const q = encodeURIComponent(`${newListing.location}, ${newListing.country}`);
       const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}`, {
-        headers: { "User-Agent": "StayHive-app/1.0" },
+        headers: { "User-Agent": "RentSphere-app/1.0" },
         signal: controller.signal,
       });
 
@@ -249,7 +249,7 @@ module.exports.updateListing = async (req, res) => {
 
       const q = encodeURIComponent(`${updatedListing.location}, ${updatedListing.country}`);
       const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}`, {
-        headers: { "User-Agent": "StayHive-app/1.0" },
+        headers: { "User-Agent": "RentSphere-app/1.0" },
         signal: controller.signal,
       });
 

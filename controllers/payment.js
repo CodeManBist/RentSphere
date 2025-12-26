@@ -78,7 +78,7 @@ module.exports.initiatePayment = async (req, res) => {
       customer_details: {
         customer_id: String(booking.guest._id),
         customer_name: booking.guest.username || "Guest",
-        customer_email: booking.guest.email || "guest@stayhive.com",
+        customer_email: booking.guest.email || "guest@rentsphere.com",
         customer_phone: booking.guest.profile?.phone || "9999999999",
       },
       order_meta: {
@@ -274,7 +274,7 @@ module.exports.createBookingAndPay = async (req, res) => {
       customer_details: {
         customer_id: String(booking.guest),
         customer_name: req.user.username || "Guest",
-        customer_email: req.user.email || "guest@stayhive.com",
+        customer_email: req.user.email || "guest@rentsphere.com",
         customer_phone: req.user.profile?.phone || "9999999999",
       },
       order_meta: {

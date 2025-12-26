@@ -297,7 +297,7 @@ document.addEventListener("DOMContentLoaded", function() {
     } else if (listingData.location && listingData.country) {
         const q = encodeURIComponent(listingData.location + ', ' + listingData.country);
         fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + q, {
-            headers: { 'User-Agent': 'StayHive-app/1.0' }
+            headers: { 'User-Agent': 'RentSphere-app/1.0' }
         })
         .then(function(res) { return res.json(); })
         .then(function(data) {

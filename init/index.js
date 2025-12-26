@@ -29,7 +29,7 @@ const initDB = async () => {
     console.log("Creating admin user...");
     const admin = new User({
       username: "admin",
-      email: "admin@stayhive.com",
+      email: "admin@rentsphere.com",
       role: "admin",               // ✅ FIXED: admin role
       savedListings: [],
       searchHistory: [],
@@ -56,7 +56,7 @@ const initDB = async () => {
     console.log("Creating sample guest user...");
     const guest = new User({
       username: "guest",
-      email: "guest@stayhive.com",
+      email: "guest@rentsphere.com",
       role: "guest",                // ✅ FIXED: guest role
       savedListings: [],
       searchHistory: [],
@@ -126,8 +126,8 @@ const initDB = async () => {
     console.log(`Listings: ${insertedListings.length}`);
     console.log(`Availability records: ${availabilityRecords.length}`);
     console.log("\nTest Accounts:");
-    console.log("  Admin: admin@stayhive.com / admin123");
-    console.log("  Guest: guest@stayhive.com / guest123");
+    console.log("  Admin: admin@rentsphere.com / admin123");
+    console.log("  Guest: guest@rentsphere.com / guest123");
     console.log("====================================\n");
 
   } catch (err) {

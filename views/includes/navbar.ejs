@@ -65,11 +65,18 @@
   .admin-indicator {
     background: linear-gradient(135deg, var(--brand-primary) 0%, #c62828 100%);
     color: white;
-    padding: 4px 12px;
+    padding: 6px 14px;
     border-radius: 9999px;
     font-size: 12px;
     font-weight: 600;
     white-space: nowrap;
+    box-shadow: 0 2px 4px rgba(254, 66, 77, 0.2);
+    transition: all 0.2s ease;
+  }
+
+  .admin-indicator:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(254, 66, 77, 0.3);
   }
 
   /* Responsive navbar improvements */
@@ -95,17 +102,24 @@
   /* Medium screens - improve navbar spacing */
   @media (min-width: 768px) and (max-width: 991.98px) {
     .navbar-nav {
-      gap: 0.25rem !important;
+      gap: 0.5rem !important;
     }
     
     .nav-link {
-      padding: 0.4rem 0.5rem !important;
+      padding: 0.5rem 0.6rem !important;
       font-size: 0.9rem;
     }
     
     .admin-indicator {
       font-size: 11px;
-      padding: 3px 10px;
+      padding: 5px 12px;
+    }
+  }
+
+  /* Large screens - better spacing for admin */
+  @media (min-width: 992px) {
+    .navbar-nav {
+      gap: 0.5rem;
     }
   }
 
@@ -137,7 +151,7 @@
     <!-- Brand -->
     <a class="navbar-brand d-flex align-items-center me-3" href="/listings">
       <i class="fa-regular fa-compass me-2" style="color: var(--brand-primary); font-size: 1.75rem;"></i>
-      <span class="fw-bold d-none d-sm-inline">StayHive</span>
+      <span class="fw-bold d-none d-sm-inline">RentSphere</span>
     </a>
 
     <!-- Hamburger -->
@@ -209,16 +223,6 @@
                 <span class="admin-indicator">
                   <i class="fa-solid fa-shield-halved me-1"></i>Admin
                 </span>
-              </a>
-            </li>
-            <li class="nav-item host-dashboard-link d-none d-xl-block">
-              <a class="nav-link" href="/bookings/host/dashboard">
-                <i class="fa-solid fa-house-user me-1"></i><span class="d-none d-xxl-inline">Host Dashboard</span>
-              </a>
-            </li>
-            <li class="nav-item guest-dashboard-link d-none d-xl-block">
-              <a class="nav-link" href="/bookings/guest/dashboard">
-                <i class="fa-solid fa-suitcase me-1"></i><span class="d-none d-xxl-inline">My Trips</span>
               </a>
             </li>
           <% } %>

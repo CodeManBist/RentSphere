@@ -25,7 +25,7 @@ const bookingRouter = require("./routes/booking")
 const paymentRouter = require("./routes/payment")
 const adminRouter = require("./routes/admin")
 
-// const MONGO_URL = 'mongodb://127.0.0.1:27017/StayHive';
+// const MONGO_URL = 'mongodb://127.0.0.1:27017/RentSphere';
 const dbUrl = process.env.ATLASDB_URL
 
 main()
