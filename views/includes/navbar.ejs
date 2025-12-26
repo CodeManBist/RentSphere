@@ -69,11 +69,64 @@
     border-radius: 9999px;
     font-size: 12px;
     font-weight: 600;
+    white-space: nowrap;
   }
 
-  /* MOBILE */
+  /* Responsive navbar improvements */
   @media (max-width: 991.98px) {
     .search-bar-container { display: none !important; }
+    
+    /* Hide admin dashboard link on mobile - it's in dropdown */
+    .admin-dashboard-link { display: none !important; }
+    
+    /* Make admin indicator more compact */
+    .admin-indicator {
+      font-size: 11px;
+      padding: 3px 10px;
+    }
+    
+    /* Hide host/guest dashboard links on mobile - they're in dropdown */
+    .host-dashboard-link,
+    .guest-dashboard-link {
+      display: none !important;
+    }
+  }
+
+  /* Medium screens - improve navbar spacing */
+  @media (min-width: 768px) and (max-width: 991.98px) {
+    .navbar-nav {
+      gap: 0.25rem !important;
+    }
+    
+    .nav-link {
+      padding: 0.4rem 0.5rem !important;
+      font-size: 0.9rem;
+    }
+    
+    .admin-indicator {
+      font-size: 11px;
+      padding: 3px 10px;
+    }
+  }
+
+  /* Small screens - improve mobile navbar */
+  @media (max-width: 575px) {
+    .navbar-brand {
+      font-size: 1.1rem;
+    }
+    
+    .navbar-brand i {
+      font-size: 1.5rem !important;
+    }
+    
+    .nav-link {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.95rem;
+    }
+    
+    .dropdown-menu {
+      min-width: 200px;
+    }
   }
 </style>
 
@@ -127,8 +180,19 @@
       <!-- RIGHT SECTION -->
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center gap-1">
 
+        <!-- Home link for mobile -->
+        <li class="nav-item d-lg-none">
+          <a class="nav-link" href="/listings">
+            <i class="fa-solid fa-home me-1"></i>Home
+          </a>
+        </li>
+
         <li class="nav-item">
-          <a class="nav-link" href="/listings/new">List your space</a>
+          <a class="nav-link" href="/listings/new">
+            <i class="fa-solid fa-plus d-lg-none me-1"></i>
+            <span class="d-none d-lg-inline">List your space</span>
+            <span class="d-lg-none">List</span>
+          </a>
         </li>
 
         <% if (!currUser) { %>
@@ -140,39 +204,39 @@
 
           <!-- ===== ADMIN ===== -->
           <% if (currUser.role === "admin") { %>
-            <li class="nav-item">
+            <li class="nav-item admin-dashboard-link d-none d-lg-block">
               <a class="nav-link d-flex align-items-center" href="/admin/dashboard">
                 <span class="admin-indicator">
-                  <i class="fa-solid fa-shield-halved me-1"></i>Admin Dashboard
+                  <i class="fa-solid fa-shield-halved me-1"></i>Admin
                 </span>
               </a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item host-dashboard-link d-none d-xl-block">
               <a class="nav-link" href="/bookings/host/dashboard">
-                <i class="fa-solid fa-house-user me-1"></i>Host Dashboard
+                <i class="fa-solid fa-house-user me-1"></i><span class="d-none d-xxl-inline">Host Dashboard</span>
               </a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item guest-dashboard-link d-none d-xl-block">
               <a class="nav-link" href="/bookings/guest/dashboard">
-                <i class="fa-solid fa-suitcase me-1"></i>My Trips
+                <i class="fa-solid fa-suitcase me-1"></i><span class="d-none d-xxl-inline">My Trips</span>
               </a>
             </li>
           <% } %>
 
           <!-- ===== HOST ===== -->
           <% if (currUser.role === "host") { %>
-            <li class="nav-item">
+            <li class="nav-item host-dashboard-link d-none d-lg-block">
               <a class="nav-link" href="/bookings/host/dashboard">
-                <i class="fa-solid fa-house-user me-1"></i>Host Dashboard
+                <i class="fa-solid fa-house-user me-1"></i><span class="d-none d-xl-inline">Host Dashboard</span>
               </a>
             </li>
           <% } %>
 
           <!-- ===== GUEST ===== -->
           <% if (currUser.role === "guest") { %>
-            <li class="nav-item">
+            <li class="nav-item guest-dashboard-link d-none d-lg-block">
               <a class="nav-link" href="/bookings/guest/dashboard">
-                <i class="fa-solid fa-suitcase me-1"></i>My Trips
+                <i class="fa-solid fa-suitcase me-1"></i><span class="d-none d-xl-inline">My Trips</span>
               </a>
             </li>
           <% } %>

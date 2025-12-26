@@ -37,10 +37,10 @@
 <!-- Completely redesigned filter section with proper responsive styling -->
 <div class="filter-section">
   <div class="container-fluid px-3 px-lg-4">
-    <div class="d-flex align-items-center gap-2 gap-lg-3">
+    <div class="d-flex align-items-center gap-2 gap-lg-3 flex-wrap">
       
       <!-- Filter Slider Wrapper -->
-      <div class="filter-slider-wrapper">
+      <div class="filter-slider-wrapper flex-shrink-1">
         <button class="filter-scroll-btn filter-scroll-left" type="button" id="filterScrollLeft" aria-label="Scroll left">
           <i class="fa-solid fa-chevron-left"></i>
         </button>
@@ -308,6 +308,7 @@
   position: sticky;
   top: 56px;
   z-index: 100;
+  overflow: visible;
 }
 
 /* Filter Slider Wrapper */
@@ -315,6 +316,18 @@
   position: relative;
   flex: 1;
   min-width: 0;
+  max-width: 100%;
+  padding: 0 2rem;
+  overflow: visible;
+}
+
+/* On mobile, prevent wrapper from taking full width */
+@media (max-width: 767px) {
+  .filter-slider-wrapper {
+    flex: 0 1 auto;
+    max-width: calc(100% - 0.5rem);
+    padding: 0 1.75rem;
+  }
 }
 
 /* Filter Slider */
@@ -355,6 +368,7 @@
   justify-content: center;
   transition: all 0.2s ease;
   color: #222;
+  opacity: 1;
 }
 
 .filter-scroll-btn:hover {
@@ -363,8 +377,9 @@
 }
 
 .filter-scroll-btn:disabled {
-  opacity: 0;
+  opacity: 0.3;
   pointer-events: none;
+  cursor: not-allowed;
 }
 
 .filter-scroll-left {
@@ -462,6 +477,51 @@
   border-radius: 12px 12px 0 0;
 }
 
+/* Medium screens (tablets) */
+@media (min-width: 768px) and (max-width: 991px) {
+  .filter-section {
+    padding: 14px 0;
+  }
+  
+  .filter-slider {
+    margin: 0 40px;
+  }
+  
+  .filter-scroll-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 0.85rem;
+  }
+  
+  .filter {
+    padding: 9px 13px;
+    min-width: 62px;
+  }
+  
+  .filter i {
+    font-size: 19px;
+    margin-bottom: 5px;
+  }
+  
+  .filter p {
+    font-size: 10.5px;
+  }
+  
+  .filter-slider-wrapper {
+    padding: 0 2.5rem;
+  }
+  
+  .advanced-filter-btn {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+  
+  .tax-toggle-wrapper {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+  }
+}
+
 /* Large Screen Improvements */
 @media (min-width: 992px) {
   .filter-slider {
@@ -518,33 +578,78 @@
   }
 }
 
-/* Mobile */
+/* Small screens (mobile) */
 @media (max-width: 767px) {
   .filter-section {
     padding: 12px 0;
   }
   
+  .filter-section > .container-fluid > div {
+    flex-wrap: nowrap;
+  }
+  
   .filter-slider {
-    margin: 0 36px;
+    margin: 0 32px;
   }
   
   .filter-scroll-btn {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
+    font-size: 0.75rem;
   }
   
   .filter {
-    padding: 8px 12px;
-    min-width: 56px;
+    padding: 7px 10px;
+    min-width: 52px;
   }
   
   .filter i {
-    font-size: 18px;
-    margin-bottom: 4px;
+    font-size: 17px;
+    margin-bottom: 3px;
   }
   
   .filter p {
-    font-size: 10px;
+    font-size: 9.5px;
+  }
+  
+  .filter-slider-wrapper {
+    padding: 0 1.75rem;
+    flex: 0 1 auto;
+    max-width: calc(100vw - 1rem);
+    overflow: visible;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 575px) {
+  .filter-slider {
+    margin: 0 28px;
+  }
+  
+  .filter-scroll-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 0.7rem;
+  }
+  
+  .filter {
+    padding: 6px 8px;
+    min-width: 48px;
+  }
+  
+  .filter i {
+    font-size: 16px;
+    margin-bottom: 2px;
+  }
+  
+  .filter p {
+    font-size: 9px;
+  }
+  
+  .filter-slider-wrapper {
+    padding: 0 1.5rem;
+    max-width: calc(100vw - 0.5rem);
+    overflow: visible;
   }
 }
 </style>
@@ -586,24 +691,49 @@ document.addEventListener('DOMContentLoaded', function() {
       const scrollLeft = filterSlider.scrollLeft;
       const maxScroll = filterSlider.scrollWidth - filterSlider.clientWidth;
       
-      scrollLeftBtn.disabled = scrollLeft <= 5;
-      scrollRightBtn.disabled = scrollLeft >= maxScroll - 5;
+      // Check if content overflows
+      const hasOverflow = filterSlider.scrollWidth > filterSlider.clientWidth;
+      
+      if (hasOverflow) {
+        // Always show buttons when there's overflow
+        scrollLeftBtn.style.display = 'flex';
+        scrollRightBtn.style.display = 'flex';
+        
+        // Disable buttons at edges
+        scrollLeftBtn.disabled = scrollLeft <= 5;
+        scrollRightBtn.disabled = scrollLeft >= maxScroll - 5;
+      } else {
+        // Hide buttons if no overflow
+        scrollLeftBtn.style.display = 'none';
+        scrollRightBtn.style.display = 'none';
+        scrollLeftBtn.disabled = true;
+        scrollRightBtn.disabled = true;
+      }
     }
     
     scrollLeftBtn.addEventListener('click', function() {
-      filterSlider.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+      if (!this.disabled) {
+        filterSlider.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+      }
     });
     
     scrollRightBtn.addEventListener('click', function() {
-      filterSlider.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+      if (!this.disabled) {
+        filterSlider.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+      }
     });
     
     filterSlider.addEventListener('scroll', updateScrollButtons);
-    window.addEventListener('resize', updateScrollButtons);
+    window.addEventListener('resize', function() {
+      // Small delay to ensure layout is complete
+      setTimeout(updateScrollButtons, 50);
+    });
     
-    // Initial check after a short delay
-    setTimeout(updateScrollButtons, 100);
+    // Initial check - run multiple times to ensure it works
     updateScrollButtons();
+    setTimeout(updateScrollButtons, 50);
+    setTimeout(updateScrollButtons, 200);
+    setTimeout(updateScrollButtons, 500);
   }
 });
 </script>
