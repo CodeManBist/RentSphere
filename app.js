@@ -50,9 +50,9 @@ app.use(express.static(path.join(__dirname, "/public")))
 
 const store = MongoStore.create({
   mongoUrl: dbUrl,
-  crypto: {
-    secret: process.env.SECRET,
-  },
+  // crypto: {
+  //   secret: process.env.SECRET,
+  // },
   touchAfter: 24 * 3600,
 })
 
@@ -62,15 +62,16 @@ store.on("error", (e) => {
 
 const sessionOptions = {
   store,
+  name: "rentsphere-session",
   secret: process.env.SECRET,
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false, // ✅ MUST be false
   cookie: {
-    expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
     maxAge: 7 * 24 * 60 * 60 * 1000,
     httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
   },
-}
+};
 
 app.use(attachSafeOwner);
 app.use(session(sessionOptions))
