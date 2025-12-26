@@ -40,6 +40,7 @@ async function main() {
   await mongoose.connect(dbUrl)
 }
 
+app.set("trust proxy", 1);
 app.set("view engine", "ejs")
 app.set("views", path.join(__dirname, "views"))
 app.use(express.json())
@@ -65,13 +66,15 @@ const sessionOptions = {
   name: "rentsphere-session",
   secret: process.env.SECRET,
   resave: false,
-  saveUninitialized: false, // ✅ MUST be false
+  saveUninitialized: false,
   cookie: {
     maxAge: 7 * 24 * 60 * 60 * 1000,
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
   },
 };
+
 
 app.use(attachSafeOwner);
 app.use(session(sessionOptions))
