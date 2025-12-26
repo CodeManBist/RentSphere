@@ -1,0 +1,228 @@
+<!-- ================= NAVBAR STYLES ================= -->
+<style>
+  :root {
+    --brand-primary: #fe424d;
+    --brand-primary-dark: #e03a44;
+  }
+
+  .search-bar-container {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 50px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    padding: 4px;
+    transition: box-shadow 0.3s;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .search-bar-container:focus-within {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    border-color: var(--brand-primary);
+  }
+
+  .search-field {
+    flex: 1;
+    padding: 8px 16px;
+    border: none;
+    border-right: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 50px;
+  }
+
+  .search-field:last-of-type { border-right: none; }
+
+  .search-field-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .search-field-input {
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    color: #717171;
+  }
+
+  .search-submit-btn {
+    background: linear-gradient(135deg, var(--brand-primary), #e23a3a);
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .admin-indicator {
+    background: linear-gradient(135deg, var(--brand-primary) 0%, #c62828 100%);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* MOBILE */
+  @media (max-width: 991.98px) {
+    .search-bar-container { display: none !important; }
+  }
+</style>
+
+<!-- ================= NAVBAR ================= -->
+<nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
+  <div class="container-fluid px-3 px-lg-4">
+
+    <!-- Brand -->
+    <a class="navbar-brand d-flex align-items-center me-3" href="/listings">
+      <i class="fa-regular fa-compass me-2" style="color: var(--brand-primary); font-size: 1.75rem;"></i>
+      <span class="fw-bold d-none d-sm-inline">StayHive</span>
+    </a>
+
+    <!-- Hamburger -->
+    <button class="navbar-toggler border-0 ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Collapse -->
+    <div class="collapse navbar-collapse" id="mainNavbar">
+
+      <!-- Search Bar -->
+      <form class="d-none d-lg-block mx-auto flex-grow-1 px-3" action="/listings/search" method="get">
+        <div class="search-bar-container">
+          <div class="search-field">
+            <span class="search-field-label">Location</span>
+            <input type="text" id="locationInput" class="search-field-input" name="q" placeholder="Search city or area">
+          </div>
+
+          <div class="search-field">
+            <span class="search-field-label">Check in</span>
+            <input type="date" class="search-field-input" name="checkIn">
+          </div>
+
+          <div class="search-field">
+            <span class="search-field-label">Check out</span>
+            <input type="date" class="search-field-input" name="checkOut">
+          </div>
+
+          <div class="search-field">
+            <span class="search-field-label">Guests</span>
+            <input type="number" class="search-field-input" name="guests" min="1" placeholder="Add guests">
+          </div>
+
+          <button class="search-submit-btn" type="submit">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </button>
+        </div>
+      </form>
+
+      <!-- RIGHT SECTION -->
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center gap-1">
+
+        <li class="nav-item">
+          <a class="nav-link" href="/listings/new">List your space</a>
+        </li>
+
+        <% if (!currUser) { %>
+          <li class="nav-item"><a class="nav-link fw-semibold" href="/signup">Sign up</a></li>
+          <li class="nav-item"><a class="nav-link fw-semibold" href="/login">Log in</a></li>
+        <% } %>
+
+        <% if (currUser) { %>
+
+          <!-- ===== ADMIN ===== -->
+          <% if (currUser.role === "admin") { %>
+            <li class="nav-item">
+              <a class="nav-link d-flex align-items-center" href="/admin/dashboard">
+                <span class="admin-indicator">
+                  <i class="fa-solid fa-shield-halved me-1"></i>Admin Dashboard
+                </span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/bookings/host/dashboard">
+                <i class="fa-solid fa-house-user me-1"></i>Host Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/bookings/guest/dashboard">
+                <i class="fa-solid fa-suitcase me-1"></i>My Trips
+              </a>
+            </li>
+          <% } %>
+
+          <!-- ===== HOST ===== -->
+          <% if (currUser.role === "host") { %>
+            <li class="nav-item">
+              <a class="nav-link" href="/bookings/host/dashboard">
+                <i class="fa-solid fa-house-user me-1"></i>Host Dashboard
+              </a>
+            </li>
+          <% } %>
+
+          <!-- ===== GUEST ===== -->
+          <% if (currUser.role === "guest") { %>
+            <li class="nav-item">
+              <a class="nav-link" href="/bookings/guest/dashboard">
+                <i class="fa-solid fa-suitcase me-1"></i>My Trips
+              </a>
+            </li>
+          <% } %>
+
+          <!-- USER DROPDOWN -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" data-bs-toggle="dropdown">
+              <div class="bg-dark text-white rounded-circle d-flex justify-content-center align-items-center" style="width: 32px; height: 32px;">
+                <%= currUser.username.charAt(0).toUpperCase() %>
+              </div>
+            </a>
+
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+
+              <li class="px-3 py-2 border-bottom">
+                <div class="fw-semibold"><%= currUser.username %></div>
+                <div class="small text-muted text-capitalize"><%= currUser.role %></div>
+              </li>
+
+              <!-- ADMIN MENU -->
+              <% if (currUser.role === "admin") { %>
+                <li><a class="dropdown-item py-2" href="/admin/dashboard">Dashboard</a></li>
+                <li><a class="dropdown-item py-2" href="/admin/users">Manage Users</a></li>
+                <li><a class="dropdown-item py-2" href="/admin/listings">Manage Listings</a></li>
+                <li><a class="dropdown-item py-2" href="/admin/bookings">Manage Bookings</a></li>
+                <li><a class="dropdown-item py-2" href="/admin/reviews">Manage Reviews</a></li>
+                <li><a class="dropdown-item py-2" href="/bookings/host/dashboard">Host Dashboard</a></li>
+                <li><a class="dropdown-item py-2" href="/bookings/guest/dashboard">My Trips</a></li>
+              <% } %>
+
+              <!-- HOST MENU -->
+              <% if (currUser.role === "host") { %>
+                <li><a class="dropdown-item py-2" href="/bookings/host/dashboard">Host Dashboard</a></li>
+                <li><a class="dropdown-item py-2" href="/bookings/guest/dashboard">My Trips</a></li>
+              <% } %>
+
+              <!-- GUEST MENU -->
+              <% if (currUser.role === "guest") { %>
+                <li><a class="dropdown-item py-2" href="/bookings/guest/dashboard">My Trips</a></li>
+              <% } %>
+
+              <li><hr class="dropdown-divider my-1"></li>
+              <li><a class="dropdown-item py-2 text-danger" href="/logout">Log out</a></li>
+
+            </ul>
+          </li>
+
+        <% } %>
+
+      </ul>
+    </div>
+  </div>
+</nav>

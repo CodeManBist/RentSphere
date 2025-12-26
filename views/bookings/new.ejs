@@ -1,0 +1,214 @@
+<%- layout('/layouts/boilerplate') %>
+
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+
+      <!-- New booking flow info banner -->
+      <div class="alert alert-info mb-3">
+        <div class="d-flex align-items-start">
+          <i class="fa-solid fa-info-circle fa-lg me-3 mt-1"></i>
+          <div>
+            <strong>Secure Your Dates</strong>
+            <p class="mb-0 small">Pay now to send your booking request. The host will review and respond within 24 hours. If declined, you'll receive a full refund automatically.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">
+          <h3 class="mb-0">
+            <i class="fa-solid fa-calendar-check me-2 text-primary"></i>
+            Review & Pay
+          </h3>
+        </div>
+        <div class="card-body">
+          <!-- Listing Summary -->
+          <div class="row mb-4">
+            <div class="col-4">
+              <img src="<%= listing.image.url %>" class="img-fluid rounded" alt="<%= listing.title %>">
+            </div>
+            <div class="col-8">
+              <h5><%= listing.title %></h5>
+              <p class="text-muted mb-1">
+                <i class="fa-solid fa-location-dot me-1"></i>
+                <%= listing.location %>, <%= listing.country %>
+              </p>
+              <p class="text-muted mb-1">
+                <span class="badge bg-secondary"><%= listing.parentCategory || 'Stay' %></span>
+                <% if (listing.bookingSettings && listing.bookingSettings.instantBook) { %>
+                <span class="badge bg-success ms-1"><i class="fa-solid fa-bolt me-1"></i>Instant Book</span>
+                <% } %>
+              </p>
+              <p class="mb-1">
+                <strong>Dates:</strong> 
+                <%= new Date(checkIn).toLocaleDateString() %> - 
+                <%= new Date(checkOut).toLocaleDateString() %>
+              </p>
+              <p class="mb-0">
+                <strong>Guests:</strong> <%= guests %> adult(s)
+              </p>
+            </div>
+          </div>
+
+          <form action="/payments/pay/<%= listing._id %>" method="POST">
+            <!-- Trip Details -->
+            <div class="mb-4">
+              <h5 class="border-bottom pb-2">Your Trip</h5>
+              <div class="row">
+                <div class="col-6">
+                  <label class="form-label fw-semibold">Check-in</label>
+                  <input type="date" class="form-control" value="<%= checkIn %>" readonly>
+                  <% if (listing.bookingSettings && listing.bookingSettings.checkInTime) { %>
+                  <small class="text-muted">After <%= listing.bookingSettings.checkInTime %></small>
+                  <% } %>
+                </div>
+                <div class="col-6">
+                  <label class="form-label fw-semibold">Check-out</label>
+                  <input type="date" class="form-control" value="<%= checkOut %>" readonly>
+                  <% if (listing.bookingSettings && listing.bookingSettings.checkOutTime) { %>
+                  <small class="text-muted">Before <%= listing.bookingSettings.checkOutTime %></small>
+                  <% } %>
+                </div>
+              </div>
+              <input type="hidden" name="checkIn" value="<%= checkIn %>">
+              <input type="hidden" name="checkOut" value="<%= checkOut %>">
+              <input type="hidden" name="guests" value="<%= guests %>">
+            </div>
+
+            <!-- Message to Host -->
+            <div class="mb-4">
+              <label for="message" class="form-label fw-semibold">
+                Message to Host (Optional)
+              </label>
+              <textarea 
+                class="form-control" 
+                id="message" 
+                name="message" 
+                rows="3" 
+                placeholder="Introduce yourself and tell the host about your trip..."
+              ></textarea>
+              <small class="text-muted">A personal message helps hosts understand your needs</small>
+            </div>
+
+            <!-- Enhanced Pricing Summary with seasonal breakdown -->
+            <div class="mb-4">
+              <h5 class="border-bottom pb-2">Price Details</h5>
+              <div id="priceSummary">
+                <% if (pricing) { %>
+                <div class="d-flex justify-content-between mb-2">
+                  <span>₹<%= listing.price.toLocaleString('en-IN') %> × <%= pricing.nights %> <%= listing.pricingUnit || 'night' %>s</span>
+                  <span>₹<%= pricing.basePrice.toLocaleString('en-IN') %></span>
+                </div>
+                <% if (pricing.seasonalAdjustment && pricing.seasonalAdjustment !== 0) { %>
+                <div class="d-flex justify-content-between mb-2 <%= pricing.seasonalAdjustment > 0 ? 'text-warning' : 'text-success' %>">
+                  <span>Seasonal adjustment</span>
+                  <span><%= pricing.seasonalAdjustment > 0 ? '+' : '' %>₹<%= pricing.seasonalAdjustment.toLocaleString('en-IN') %></span>
+                </div>
+                <% } %>
+                <div class="d-flex justify-content-between mb-2">
+                  <span>Service fee</span>
+                  <span>₹<%= pricing.serviceFee.toLocaleString('en-IN') %></span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between fw-bold fs-5">
+                  <span>Total</span>
+                  <span class="text-primary">₹<%= pricing.total.toLocaleString('en-IN') %></span>
+                </div>
+                <% } else { %>
+                <p class="text-muted">Calculating price...</p>
+                <% } %>
+              </div>
+            </div>
+
+            <!-- Cancellation Policy -->
+            <% if (cancellationMessage) { %>
+            <div class="alert alert-light mb-4">
+              <h6 class="mb-2"><i class="fa-solid fa-shield me-2"></i>Cancellation Policy</h6>
+              <p class="mb-0 small"><%= cancellationMessage %></p>
+            </div>
+            <% } %>
+
+            <!-- Updated submit button text -->
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                <i class="fa-solid fa-lock me-2"></i>
+                Pay & Request Booking
+              </button>
+              <small class="text-center text-muted mt-2">
+                You won't be charged if the host declines
+              </small>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <div class="mt-3">
+        <a href="/listings/<%= listing._id %>" class="btn btn-outline-secondary">
+          <i class="fa-solid fa-arrow-left me-1"></i>
+          Back to Listing
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const checkIn = '<%= checkIn %>';
+  const checkOut = '<%= checkOut %>';
+  const guests = '<%= guests %>';
+  const listingId = '<%= listing._id %>';
+
+  // Only fetch if pricing not already provided server-side
+  <% if (!pricing) { %>
+  fetch(`/bookings/${listingId}/check-availability?checkIn=${checkIn}&checkOut=${checkOut}&guests=${guests}`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.available) {
+        let priceHtml = `
+          <div class="d-flex justify-content-between mb-2">
+            <span>₹${data.pricing.baseNightlyRate.toLocaleString('en-IN')} × ${data.pricing.nights} ${data.pricing.pricingUnit}s</span>
+            <span>₹${data.pricing.basePrice.toLocaleString('en-IN')}</span>
+          </div>
+        `;
+        
+        if (data.pricing.seasonalAdjustment && data.pricing.seasonalAdjustment !== 0) {
+          priceHtml += `
+            <div class="d-flex justify-content-between mb-2 ${data.pricing.seasonalAdjustment > 0 ? 'text-warning' : 'text-success'}">
+              <span>Seasonal adjustment (${data.currentSeason.name})</span>
+              <span>${data.pricing.seasonalAdjustment > 0 ? '+' : ''}₹${data.pricing.seasonalAdjustment.toLocaleString('en-IN')}</span>
+            </div>
+          `;
+        }
+        
+        priceHtml += `
+          <div class="d-flex justify-content-between mb-2">
+            <span>Service fee</span>
+            <span>₹${data.pricing.serviceFee.toLocaleString('en-IN')}</span>
+          </div>
+          <hr>
+          <div class="d-flex justify-content-between fw-bold fs-5">
+            <span>Total</span>
+            <span class="text-primary">₹${data.pricing.total.toLocaleString('en-IN')}</span>
+          </div>
+        `;
+        document.getElementById('priceSummary').innerHTML = priceHtml;
+      } else {
+        document.getElementById('priceSummary').innerHTML = `
+          <div class="alert alert-danger">
+            <i class="fa-solid fa-triangle-exclamation me-2"></i>
+            ${data.error || 'These dates are no longer available'}
+          </div>
+        `;
+        document.getElementById('submitBtn').disabled = true;
+      }
+    })
+    .catch(error => {
+      console.error('Error loading price:', error);
+      document.getElementById('priceSummary').innerHTML =
+        '<div class="alert alert-danger">Error loading price details</div>';
+    });
+  <% } %>
+});
+</script>

@@ -1,0 +1,217 @@
+<%- layout("/layouts/boilerplate") %>
+
+<style>
+    .admin-header {
+        background: linear-gradient(135deg, #fe424d 0%, #c62828 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+    }
+    .admin-nav {
+        background: white;
+        border-radius: 1rem;
+        padding: 1rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+    }
+    .admin-nav-link {
+        padding: 0.75rem 1.25rem;
+        border-radius: 0.5rem;
+        color: #4b5563;
+        text-decoration: none;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .admin-nav-link:hover, .admin-nav-link.active {
+        background: #fe424d;
+        color: white;
+    }
+    .table-card {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        color: #6b7280;
+    }
+    .role-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .role-admin { background: #fee2e2; color: #991b1b; }
+    .role-host { background: #dbeafe; color: #1e40af; }
+    .role-guest { background: #d1fae5; color: #065f46; }
+    .filter-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        margin-bottom: 1.5rem;
+    }
+</style>
+
+<div class="container py-4">
+    <div class="admin-header">
+        <h1 class="mb-1"><i class="fa-solid fa-users me-2"></i>User Management</h1>
+        <p class="mb-0 opacity-75">Manage all platform users</p>
+    </div>
+
+    <!-- Admin Navigation -->
+    <div class="admin-nav">
+        <div class="d-flex flex-wrap gap-2">
+            <a href="/admin/dashboard" class="admin-nav-link">
+                <i class="fa-solid fa-chart-line"></i> Dashboard
+            </a>
+            <a href="/admin/users" class="admin-nav-link active">
+                <i class="fa-solid fa-users"></i> Users
+            </a>
+            <a href="/admin/bookings" class="admin-nav-link">
+                <i class="fa-solid fa-calendar-check"></i> Bookings
+            </a>
+            <a href="/admin/reviews" class="admin-nav-link">
+                <i class="fa-solid fa-star"></i> Reviews
+            </a>
+            <a href="/admin/seasonal-pricing" class="admin-nav-link">
+                <i class="fa-solid fa-tags"></i> Pricing Rules
+            </a>
+            <a href="/admin/payment-logs" class="admin-nav-link">
+                <i class="fa-solid fa-credit-card"></i> Payments
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-card">
+        <form method="GET" action="/admin/users" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Search</label>
+                <input type="text" name="search" class="form-control" 
+                       placeholder="Username or email..." value="<%= query.search || '' %>">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Role</label>
+                <select name="role" class="form-select">
+                    <option value="">All Roles</option>
+                    <option value="guest" <%= query.role === 'guest' ? 'selected' : '' %>>Guest</option>
+                    <option value="host" <%= query.role === 'host' ? 'selected' : '' %>>Host</option>
+                    <option value="admin" <%= query.role === 'admin' ? 'selected' : '' %>>Admin</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Status</label>
+                <select name="blocked" class="form-select">
+                    <option value="">All Users</option>
+                    <option value="true" <%= query.blocked === 'true' ? 'selected' : '' %>>Blocked Only</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fa-solid fa-search me-1"></i> Filter
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Users Table -->
+    <div class="table-card">
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Users (<%= totalUsers %>)</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Joined</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% users.forEach(user => { %>
+                    <tr class="<%= user.isBlocked ? 'table-danger' : '' %>">
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="user-avatar">
+                                    <%= user.username.charAt(0).toUpperCase() %>
+                                </div>
+                                <strong><%= user.username %></strong>
+                            </div>
+                        </td>
+                        <td><%= user.email %></td>
+                        <td>
+                            <span class="role-badge role-<%= user.role %>">
+                                <%= user.role %>
+                            </span>
+                        </td>
+                        <td>
+                            <% if (user.isBlocked) { %>
+                            <span class="badge bg-danger">Blocked</span>
+                            <% } else { %>
+                            <span class="badge bg-success">Active</span>
+                            <% } %>
+                        </td>
+                        <td><%= user.createdAt.toLocaleDateString() %></td>
+                        <td>
+                            <% if (user.role !== 'admin') { %>
+                            <div class="d-flex gap-1">
+                                <form action="/admin/users/<%= user._id %>/toggle-block" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-sm <%= user.isBlocked ? 'btn-success' : 'btn-warning' %>">
+                                        <i class="fa-solid fa-<%= user.isBlocked ? 'unlock' : 'ban' %>"></i>
+                                    </button>
+                                </form>
+                                <form action="/admin/users/<%= user._id %>?_method=DELETE" method="POST" class="d-inline"
+                                      onsubmit="return confirm('Delete this user permanently?')">
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                            <% } else { %>
+                            <span class="text-muted">-</span>
+                            <% } %>
+                        </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <% if (totalPages > 1) { %>
+        <div class="p-3 border-top">
+            <nav>
+                <ul class="pagination justify-content-center mb-0">
+                    <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                        <a class="page-link" href="?page=<%= currentPage - 1 %>&search=<%= query.search || '' %>&role=<%= query.role || '' %>">Previous</a>
+                    </li>
+                    <% for (let i = 1; i <= totalPages; i++) { %>
+                    <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                        <a class="page-link" href="?page=<%= i %>&search=<%= query.search || '' %>&role=<%= query.role || '' %>"><%= i %></a>
+                    </li>
+                    <% } %>
+                    <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                        <a class="page-link" href="?page=<%= currentPage + 1 %>&search=<%= query.search || '' %>&role=<%= query.role || '' %>">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        <% } %>
+    </div>
+</div>

@@ -1,0 +1,243 @@
+<%- layout('/layouts/boilerplate') %>
+
+<style>
+  /* Mobile-specific improvements */
+  @media (max-width: 768px) {
+    .form-control-lg {
+      font-size: 16px; /* Prevents zoom on iOS */
+    }
+    
+    .btn-lg {
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+    }
+    
+    .card-body {
+      padding: 1.5rem !important;
+    }
+    
+    .input-group-text {
+      font-size: 1rem;
+    }
+  }
+  
+  /* Enhanced form styling */
+  .form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+  }
+  
+  .form-label {
+    color: #495057;
+    margin-bottom: 0.5rem;
+  }
+  
+  .form-text {
+    font-size: 0.875rem;
+    color: #6c757d;
+  }
+  
+  /* Image preview styling */
+  .img-preview {
+    transition: transform 0.2s ease-in-out;
+  }
+  
+  .img-preview:hover {
+    transform: scale(1.02);
+  }
+</style>
+
+<!-- Responsive Edit Form -->
+<div class="container-fluid px-2 px-md-3 px-lg-4 mt-3">
+    <div class="row justify-content-center">
+        <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
+            <!-- Header Section -->
+            <div class="text-center mb-4">
+                <h2 class="h3 mb-2">
+                    <i class="fa-solid fa-edit me-2 text-primary"></i>Edit Listing
+                </h2>
+                <p class="text-muted mb-0">Update your property details</p>
+            </div>
+            
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-3 p-md-4">
+                    <form 
+                        action="/listings/<%= listing._id %>?_method=PUT" 
+                        method="post" 
+                        class="needs-validation" 
+                        novalidate
+                        enctype="multipart/form-data"
+                    >
+                        <!-- Title Field -->
+                        <div class="mb-4">
+                            <label for="title" class="form-label fw-semibold">
+                                <i class="fa-solid fa-tag me-1 text-primary"></i>Title
+                            </label>
+                            <input 
+                                class="form-control form-control-lg"
+                                name="listing[title]" 
+                                value="<%= listing.title %>"
+                                type="text"
+                                placeholder="Enter property title"
+                                required
+                            >
+                            <div class="valid-feedback">
+                                <i class="fa-solid fa-check-circle me-1"></i>Title looks good!
+                            </div>
+                            <div class="invalid-feedback">
+                                Please provide a title for your listing.
+                            </div>
+                        </div>
+                        
+                        <!-- Description Field -->
+                        <div class="mb-4">
+                            <label for="description" class="form-label fw-semibold">
+                                <i class="fa-solid fa-align-left me-1 text-primary"></i>Description
+                            </label>
+                            <textarea 
+                                class="form-control"
+                                name="listing[description]"
+                                rows="4"
+                                placeholder="Describe your property in detail..."
+                            ><%= listing.description %></textarea>
+                            <div class="form-text">Help guests understand what makes your place special</div>
+                            <div class="valid-feedback">
+                                <i class="fa-solid fa-check-circle me-1"></i>Description looks good!
+                            </div>
+                        </div>
+
+                        <!-- Category Field -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                <i class="fa-solid fa-list me-1 text-primary"></i>Category
+                            </label>
+
+                            <select class="form-select form-select-lg" name="listing[category]" required>
+                                <option disabled>Select Category</option>
+                                <option value="Trending" <%= listing.category === "Trending" ? "selected" : "" %>>Trending</option>
+                                <option value="Rooms" <%= listing.category === "Rooms" ? "selected" : "" %>>Rooms</option>
+                                <option value="Iconic Cities" <%= listing.category === "Iconic Cities" ? "selected" : "" %>>Iconic Cities</option>
+                                <option value="Mountains" <%= listing.category === "Mountains" ? "selected" : "" %>>Mountains</option>
+                                <option value="Castle" <%= listing.category === "Castle" ? "selected" : "" %>>Castle</option>
+                                <option value="Amazing Pools" <%= listing.category === "Amazing Pools" ? "selected" : "" %>>Amazing Pools</option>
+                                <option value="Camping" <%= listing.category === "Camping" ? "selected" : "" %>>Camping</option>
+                                <option value="Farms" <%= listing.category === "Farms" ? "selected" : "" %>>Farms</option>
+                                <option value="Arctic" <%= listing.category === "Arctic" ? "selected" : "" %>>Arctic</option>
+                                <option value="Domes" <%= listing.category === "Domes" ? "selected" : "" %>>Domes</option>
+                                <option value="Boats" <%= listing.category === "Boats" ? "selected" : "" %>>Boats</option>
+                            </select>
+                        </div>
+
+                        
+                        <!-- Current Image Section -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                <i class="fa-solid fa-image me-1 text-primary"></i>Current Image
+                            </label>
+                            <div class="text-center p-3 border rounded bg-light">
+                                <img src="<%= originalImageUrl %>" 
+                                     class="img-fluid rounded shadow-sm img-preview" 
+                                     style="max-height: 250px; width: auto; max-width: 100%;" 
+                                     alt="Current listing image">
+                                <p class="text-muted mt-2 mb-0 small">Current property image</p>
+                            </div>
+                        </div>
+                        
+                        <!-- New Image Upload -->
+                        <div class="mb-4">
+                            <label for="image" class="form-label fw-semibold">
+                                <i class="fa-solid fa-upload me-1 text-primary"></i>Upload New Image
+                            </label>
+                            <input
+                                class="form-control form-control-lg" 
+                                name="listing[image]" 
+                                type="file"
+                                accept="image/*"
+                            >
+                            <div class="form-text">Choose a new image to replace the current one (optional)</div>
+                        </div>
+                        
+                        <!-- Price and Country Row -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-12 col-sm-6">
+                                <label for="price" class="form-label fw-semibold">
+                                    <i class="fa-solid fa-rupee-sign me-1 text-primary"></i>Price per Night (₹)
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">₹</span>
+                                    <input 
+                                        class="form-control form-control-lg"
+                                        name="listing[price]" 
+                                        value="<%= listing.price %>" 
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        placeholder="0.00"
+                                        required
+                                    >
+                                </div>
+                                <div class="valid-feedback">
+                                    <i class="fa-solid fa-check-circle me-1"></i>Price looks good!
+                                </div>
+                                <div class="invalid-feedback">
+                                    Please enter a valid price.
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <label for="country" class="form-label fw-semibold">
+                                    <i class="fa-solid fa-flag me-1 text-primary"></i>Country
+                                </label>
+                                <input 
+                                    class="form-control form-control-lg"
+                                    name="listing[country]" 
+                                    value="<%= listing.country %>" 
+                                    type="text"
+                                    placeholder="Enter country name"
+                                    required
+                                >
+                                <div class="valid-feedback">
+                                    <i class="fa-solid fa-check-circle me-1"></i>Country looks good!
+                                </div>
+                                <div class="invalid-feedback">
+                                    Please enter the country name.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Location Field -->
+                        <div class="mb-4">
+                            <label for="location" class="form-label fw-semibold">
+                                <i class="fa-solid fa-location-dot me-1 text-primary"></i>Location
+                            </label>
+                            <input 
+                                class="form-control form-control-lg"
+                                name="listing[location]" 
+                                value="<%= listing.location %>" 
+                                type="text"
+                                placeholder="Enter city, state, or area"
+                                required
+                            >
+                            <div class="form-text">Be specific about the neighborhood or area</div>
+                            <div class="valid-feedback">
+                                <i class="fa-solid fa-check-circle me-1"></i>Location looks good!
+                            </div>
+                            <div class="invalid-feedback">
+                                Please enter the location.
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="/listings/<%= listing._id %>" class="btn btn-outline-secondary btn-lg me-md-2">
+                                <i class="fa-solid fa-times me-2"></i>Cancel
+                            </a>
+                            <button class="btn btn-primary btn-lg" type="submit">
+                                <i class="fa-solid fa-save me-2"></i>Update Listing
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

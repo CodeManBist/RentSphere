@@ -1,0 +1,251 @@
+<%- layout('/layouts/boilerplate') %>
+
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+
+      <!-- Refund message alert at top if applicable -->
+      <% if (refundMessage) { %>
+      <div class="alert alert-<%= refundMessage.icon && refundMessage.icon.includes('check') ? 'success' : refundMessage.icon && refundMessage.icon.includes('exclamation') ? 'warning' : 'info' %> mb-3">
+        <div class="d-flex align-items-center">
+          <i class="<%= refundMessage.icon || 'fa-solid fa-info-circle' %> fa-2x me-3"></i>
+          <div>
+            <strong><%= refundMessage.title %></strong>
+            <p class="mb-0"><%= refundMessage.message %></p>
+          </div>
+        </div>
+      </div>
+      <% } %>
+
+      <div class="card shadow-sm">
+
+        <!-- HEADER -->
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <h3 class="mb-0">Booking Details</h3>
+
+          <!-- Enhanced status badge with more states -->
+          <span class="badge bg-<%= 
+            booking.status === 'confirmed' ? 'success' : 
+            booking.status === 'paid' || booking.status === 'pending_approval' ? 'warning' :
+            booking.status === 'pending_payment' ? 'secondary' :
+            booking.status === 'completed' ? 'info' : 
+            booking.status === 'rejected' ? 'danger' : 'danger' 
+          %>">
+            <% if (booking.status === 'pending_payment') { %>
+              Awaiting Payment
+            <% } else if (booking.status === 'paid' || booking.status === 'pending_approval') { %>
+              Awaiting Host Approval
+            <% } else if (booking.status === 'rejected') { %>
+              Declined by Host
+            <% } else { %>
+              <%= booking.status.charAt(0).toUpperCase() + booking.status.slice(1) %>
+            <% } %>
+          </span>
+        </div>
+
+        <div class="card-body">
+          <!-- BOOKING INFO -->
+          <div class="row mb-4">
+            <div class="col-md-4">
+              <% if (booking.listing && booking.listing.image && booking.listing.image.url) { %>
+                <img src="<%= booking.listing.image.url %>" class="img-fluid rounded" alt="<%= booking.listing.title %>">
+              <% } else { %>
+                <div class="bg-light text-muted p-4 rounded text-center">
+                  No Image
+                </div>
+              <% } %>
+            </div>
+
+            <div class="col-md-8">
+              <h5>
+                <%= booking.listing ? booking.listing.title : "Listing Deleted" %>
+              </h5>
+
+              <% if (booking.listing) { %>
+                <p class="text-muted mb-2">
+                  <i class="fa-solid fa-location-dot me-1"></i>
+                  <%= booking.listing.location %>, <%= booking.listing.country %>
+                </p>
+              <% } %>
+
+              <p class="mb-2">
+                <strong>Dates:</strong>
+                <%= booking.checkIn.toLocaleDateString() %> -
+                <%= booking.checkOut.toLocaleDateString() %>
+                (<%= booking.pricing.nights %> <%= booking.pricing.pricingUnit || 'night' %>s)
+              </p>
+
+              <p class="mb-2">
+                <strong>Guests:</strong> <%= booking.guestCount.adults %>
+              </p>
+
+              <% if (booking.guestMessage) { %>
+                <p class="mb-2">
+                  <strong>Message:</strong> "<%= booking.guestMessage %>"
+                </p>
+              <% } %>
+
+              <!-- Host response if rejected -->
+              <% if (booking.hostResponse) { %>
+                <div class="alert alert-warning py-2 mt-2">
+                  <strong>Host's response:</strong> "<%= booking.hostResponse %>"
+                </div>
+              <% } %>
+
+              <!-- PAYMENT STATUS -->
+              <p class="fw-bold mb-0">
+                <% if (booking.payment && booking.payment.status === 'paid') { %>
+                  <span class="badge bg-success"><i class="fa-solid fa-check-circle me-1"></i>Payment Successful</span>
+                <% } else { %>
+                  <span class="badge bg-warning text-dark"><i class="fa-solid fa-clock me-1"></i>Payment Pending</span>
+                <% } %>
+              </p>
+            </div>
+          </div>
+
+          <!-- PRICE BREAKDOWN -->
+          <div class="mb-4">
+            <h5 class="border-bottom pb-2">Price Breakdown</h5>
+
+            <div class="d-flex justify-content-between mb-2">
+              <span>₹<%= booking.pricing.nightlyRate.toLocaleString('en-IN') %> × <%= booking.pricing.nights %> <%= booking.pricing.pricingUnit || 'night' %>s</span>
+              <span>₹<%= booking.pricing.basePrice.toLocaleString('en-IN') %></span>
+            </div>
+
+            <!-- Seasonal adjustment display -->
+            <% if (booking.pricing.seasonalAdjustment && booking.pricing.seasonalAdjustment !== 0) { %>
+            <div class="d-flex justify-content-between mb-2 <%= booking.pricing.seasonalAdjustment > 0 ? 'text-warning' : 'text-success' %>">
+              <span>Seasonal adjustment</span>
+              <span><%= booking.pricing.seasonalAdjustment > 0 ? '+' : '' %>₹<%= booking.pricing.seasonalAdjustment.toLocaleString('en-IN') %></span>
+            </div>
+            <% } %>
+
+            <div class="d-flex justify-content-between mb-2">
+              <span>Service Fee</span>
+              <span>₹<%= booking.pricing.serviceFee.toLocaleString('en-IN') %></span>
+            </div>
+
+            <hr>
+
+            <div class="d-flex justify-content-between fw-bold fs-5">
+              <span>Total</span>
+              <span class="text-primary">₹<%= booking.pricing.total.toLocaleString('en-IN') %></span>
+            </div>
+          </div>
+
+          <!-- Cancellation Policy -->
+          <% if (cancellationPolicy && booking.status !== 'cancelled' && booking.status !== 'rejected') { %>
+          <div class="alert alert-light mb-4">
+            <h6><i class="fa-solid fa-shield me-2"></i>Cancellation Policy</h6>
+            <p class="mb-0 small"><%= cancellationPolicy %></p>
+          </div>
+          <% } %>
+
+          <!-- ACTIONS -->
+          <div class="d-flex gap-2 align-items-center flex-wrap">
+
+            <!-- HOST: ACCEPT/REJECT (only if paid and awaiting approval) -->
+            <% if (isHost && (booking.status === 'paid' || booking.status === 'pending_approval')) { %>
+              <form action="/bookings/booking/<%= booking._id %>/accept" method="POST" class="me-2">
+                <button class="btn btn-success">
+                  <i class="fa-solid fa-check me-1"></i>Accept Booking
+                </button>
+              </form>
+              <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                <i class="fa-solid fa-xmark me-1"></i>Decline
+              </button>
+            <% } %>
+
+            <!-- GUEST: PAY NOW (only if pending_payment) -->
+            <% if (isGuest && booking.status === 'pending_payment') { %>
+              <a href="/payments/pay/<%= booking._id %>" class="btn btn-primary">
+                <i class="fa-solid fa-credit-card me-1"></i>Complete Payment
+              </a>
+            <% } %>
+
+            <!-- CANCEL (host or guest, if not already cancelled/completed/rejected) -->
+            <% if (booking.status !== 'cancelled' && booking.status !== 'completed' && booking.status !== 'rejected') { %>
+              <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelModal">
+                <i class="fa-solid fa-xmark me-1"></i>Cancel Booking
+              </button>
+            <% } %>
+
+            <!-- BACK -->
+            <a href="<%= isHost ? '/bookings/host/dashboard' : '/bookings/guest/dashboard' %>" class="btn btn-outline-secondary ms-auto">
+              <i class="fa-solid fa-arrow-left me-1"></i>Back to Dashboard
+            </a>
+
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Reject Modal (for hosts) -->
+<% if (isHost) { %>
+<div class="modal fade" id="rejectModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Decline Booking</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form action="/bookings/booking/<%= booking._id %>/reject" method="POST">
+        <div class="modal-body">
+          <div class="alert alert-warning">
+            <i class="fa-solid fa-exclamation-triangle me-2"></i>
+            The guest will receive a full refund within 24 working hours.
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Reason (optional)</label>
+            <textarea name="reason" class="form-control" rows="3" 
+                      placeholder="Let the guest know why you can't host them..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Decline & Refund Guest</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<% } %>
+
+<!-- Cancel Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cancel Booking</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form action="/bookings/booking/<%= booking._id %>/cancel" method="POST">
+        <div class="modal-body">
+          <% if (booking.payment && booking.payment.status === 'paid') { %>
+          <div class="alert alert-info">
+            <i class="fa-solid fa-info-circle me-2"></i>
+            <% if (isHost) { %>
+            The guest will receive a full refund within 24 working hours.
+            <% } else { %>
+            Your payment will be refunded within 24 working hours.
+            <% } %>
+          </div>
+          <% } %>
+          <div class="mb-3">
+            <label class="form-label">Reason (optional)</label>
+            <textarea name="reason" class="form-control" rows="3" 
+                      placeholder="Why are you cancelling?"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Booking</button>
+          <button type="submit" class="btn btn-danger">Cancel Booking</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

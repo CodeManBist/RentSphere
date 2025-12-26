@@ -1,0 +1,240 @@
+<%- layout('/layouts/boilerplate') %>
+
+<!-- Updated new listing form with multi-category support -->
+<div class="container-fluid px-2 px-md-3 px-lg-4 mt-3">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8 col-xl-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h3 class="card-title mb-0 text-center">
+                        <i class="fa-solid fa-plus-circle me-2 text-primary"></i>Create New Listing
+                    </h3>
+                </div>
+                <div class="card-body p-3 p-md-4">
+                    <form  
+                        action="/listings" 
+                        method="post" 
+                        class="needs-validation" 
+                        novalidate
+                        enctype="multipart/form-data"
+                    >
+                        <!-- Basic Info -->
+                        <div class="mb-3">
+                            <label for="title" class="form-label fw-semibold">Title</label>
+                            <input 
+                                class="form-control" 
+                                name="listing[title]" 
+                                placeholder="Add a catchy title for your listing" 
+                                type="text"
+                                required
+                            >
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label fw-semibold">Description</label>
+                            <textarea 
+                                class="form-control" 
+                                name="listing[description]"
+                                placeholder="Describe your listing in detail..."
+                                rows="4"
+                                required
+                            ></textarea>
+                        </div>
+
+                        <!-- Category Selection -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Category Type</label>
+                                <select class="form-select" name="listing[parentCategory]" id="parentCategory" required>
+                                    <option value="" disabled selected>Select Category Type</option>
+                                    <% parentCategories.forEach(cat => { %>
+                                        <option value="<%= cat.key %>" data-pricing="<%= cat.pricingUnit %>">
+                                            <%= cat.name %>
+                                        </option>
+                                    <% }) %>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Sub-Category</label>
+                                <select class="form-select" name="listing[category]" id="subCategory" required>
+                                    <option value="" disabled selected>Select sub-category first</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Image Upload -->
+                        <div class="mb-3">
+                            <label for="image" class="form-label fw-semibold">Upload Listing Image</label>
+                            <input 
+                                class="form-control" 
+                                name="listing[image]" 
+                                type="file"
+                                accept="image/*"
+                                required
+                            >
+                            <div class="form-text">Choose a high-quality image for your listing</div>
+                        </div>
+                        
+                        <!-- Pricing & Location -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-6 col-md-4">
+                                <label class="form-label fw-semibold">Price (₹)</label>
+                                <input 
+                                    class="form-control" 
+                                    name="listing[price]" 
+                                    placeholder="1200" 
+                                    type="number"
+                                    min="0"
+                                    required
+                                >
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <label class="form-label fw-semibold">Pricing Unit</label>
+                                <select class="form-select" name="listing[pricingUnit]" id="pricingUnit">
+                                    <option value="night">Per Night</option>
+                                    <option value="day">Per Day</option>
+                                    <option value="hour">Per Hour</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label class="form-label fw-semibold">Max Guests/Capacity</label>
+                                <input 
+                                    class="form-control" 
+                                    name="listing[maxGuests]" 
+                                    placeholder="4" 
+                                    type="number"
+                                    min="1"
+                                    value="4"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Location</label>
+                                <input
+                                    class="form-control"  
+                                    name="listing[location]" 
+                                    placeholder="Jaipur, Rajasthan" 
+                                    type="text"
+                                    required
+                                >
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Country</label>
+                                <input 
+                                    class="form-control" 
+                                    name="listing[country]" 
+                                    placeholder="India" 
+                                    type="text"
+                                    required
+                                >
+                            </div>
+                        </div>
+
+                        <!-- Booking Settings -->
+                        <div class="card bg-light mb-3">
+                            <div class="card-body">
+                                <h6 class="card-title mb-3">
+                                    <i class="fa-solid fa-cog me-2"></i>Booking Settings
+                                </h6>
+                                <div class="row g-3">
+                                    <div class="col-6 col-md-3">
+                                        <label class="form-label small">Min Stay</label>
+                                        <input type="number" class="form-control form-control-sm" 
+                                               name="listing[minStay]" value="1" min="1">
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <label class="form-label small">Max Stay</label>
+                                        <input type="number" class="form-control form-control-sm" 
+                                               name="listing[maxStay]" value="30" min="1">
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <label class="form-label small">Check-in</label>
+                                        <input type="time" class="form-control form-control-sm" 
+                                               name="listing[checkInTime]" value="15:00">
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <label class="form-label small">Check-out</label>
+                                        <input type="time" class="form-control form-control-sm" 
+                                               name="listing[checkOutTime]" value="11:00">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Policies -->
+                        <div class="card bg-light mb-3">
+                            <div class="card-body">
+                                <h6 class="card-title mb-3">
+                                    <i class="fa-solid fa-shield me-2"></i>Policies
+                                </h6>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label small">Cancellation Policy</label>
+                                        <select class="form-select form-select-sm" name="listing[cancellationPolicy]">
+                                            <option value="flexible">Flexible</option>
+                                            <option value="moderate" selected>Moderate</option>
+                                            <option value="strict">Strict</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check mt-4">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   name="listing[petsAllowed]" value="true" id="petsAllowed">
+                                            <label class="form-check-label" for="petsAllowed">
+                                                Pets Allowed
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check mt-4">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   name="listing[instantBook]" value="true" id="instantBook">
+                                            <label class="form-check-label" for="instantBook">
+                                                Instant Book
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button class="btn btn-dark add-btn btn-lg" type="submit">
+                                <i class="fa-solid fa-plus me-2"></i>Create Listing
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Dynamic subcategory loading
+const allCategories = <%- JSON.stringify(allCategories) %>;
+
+document.getElementById('parentCategory').addEventListener('change', function() {
+    const parent = this.value;
+    const subSelect = document.getElementById('subCategory');
+    const pricingSelect = document.getElementById('pricingUnit');
+    
+    // Clear existing options
+    subSelect.innerHTML = '<option value="" disabled selected>Select sub-category</option>';
+    
+    if (allCategories[parent]) {
+        const subs = allCategories[parent].subcategories;
+        for (const [key, sub] of Object.entries(subs)) {
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = sub.name;
+            subSelect.appendChild(option);
+        }
+        
+        // Update pricing unit based on category
+        pricingSelect.value = allCategories[parent].pricingUnit;
+    }
+});
+</script>

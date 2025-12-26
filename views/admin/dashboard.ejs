@@ -1,0 +1,360 @@
+<%- layout("/layouts/boilerplate") %>
+
+<style>
+    .admin-header {
+        background: linear-gradient(135deg, #fe424d 0%, #c62828 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+    }
+    .stat-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s, box-shadow 0.3s;
+        height: 100%;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    .stat-icon.blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+    .stat-icon.green { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+    .stat-icon.purple { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+    .stat-icon.orange { background: rgba(249, 115, 22, 0.1); color: #f97316; }
+    .stat-icon.red { background: rgba(254, 66, 77, 0.1); color: #fe424d; }
+    .stat-icon.yellow { background: rgba(234, 179, 8, 0.1); color: #eab308; }
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1f2937;
+    }
+    .stat-label {
+        color: #6b7280;
+        font-size: 0.9rem;
+    }
+    .admin-nav {
+        background: white;
+        border-radius: 1rem;
+        padding: 1rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+    }
+    .admin-nav-link {
+        padding: 0.75rem 1.25rem;
+        border-radius: 0.5rem;
+        color: #4b5563;
+        text-decoration: none;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .admin-nav-link:hover, .admin-nav-link.active {
+        background: #fe424d;
+        color: white;
+    }
+    .table-card {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    .table-card .table {
+        margin-bottom: 0;
+    }
+    .table-card th {
+        background: #f9fafb;
+        border-bottom: 2px solid #e5e7eb;
+        font-weight: 600;
+        color: #374151;
+    }
+    .chart-container {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .status-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .status-paid { background: #d1fae5; color: #065f46; }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-confirmed { background: #dbeafe; color: #1e40af; }
+    .status-cancelled { background: #fee2e2; color: #991b1b; }
+</style>
+
+<div class="container py-4">
+    <!-- Admin Header -->
+    <div class="admin-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1 class="mb-1"><i class="fa-solid fa-shield-halved me-2"></i>Admin Dashboard</h1>
+                <p class="mb-0 opacity-75">Platform overview and management</p>
+            </div>
+            <div class="text-end">
+                <p class="mb-0 opacity-75">Logged in as</p>
+                <strong><%= currUser.username %></strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Navigation -->
+    <div class="admin-nav">
+        <div class="d-flex flex-wrap gap-2">
+            <a href="/admin/dashboard" class="admin-nav-link active">
+                <i class="fa-solid fa-chart-line"></i> Dashboard
+            </a>
+            <a href="/admin/users" class="admin-nav-link">
+                <i class="fa-solid fa-users"></i> Users
+            </a>
+            <a href="/admin/listings" class="admin-nav-link">
+                <i class="fa-solid fa-house"></i> Listings
+                <% if (typeof pendingListings !== 'undefined' && pendingListings > 0) { %>
+                <span class="badge bg-danger"><%= pendingListings %></span>
+                <% } %>
+            </a>
+            <a href="/admin/bookings" class="admin-nav-link">
+                <i class="fa-solid fa-calendar-check"></i> Bookings
+            </a>
+            <a href="/admin/reviews" class="admin-nav-link">
+                <i class="fa-solid fa-star"></i> Reviews
+            </a>
+            <a href="/admin/seasonal-pricing" class="admin-nav-link">
+                <i class="fa-solid fa-tags"></i> Pricing Rules
+            </a>
+            <a href="/admin/payment-logs" class="admin-nav-link">
+                <i class="fa-solid fa-credit-card"></i> Payments
+            </a>
+        </div>
+    </div>
+
+    <!-- Pending Listings Alert -->
+    <% if (typeof pendingListings !== 'undefined' && pendingListings > 0) { %>
+    <div class="alert alert-warning d-flex align-items-center mb-4">
+        <i class="fa-solid fa-clock me-2"></i>
+        <strong><%= pendingListings %> listing(s)</strong>&nbsp;awaiting your approval.
+        <a href="/admin/listings?status=pending_approval" class="btn btn-warning btn-sm ms-auto">
+            Review Now <i class="fa-solid fa-arrow-right ms-1"></i>
+        </a>
+    </div>
+    <% } %>
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="stat-label mb-1">Total Users</p>
+                        <p class="stat-value mb-0"><%= totalUsers.toLocaleString() %></p>
+                    </div>
+                    <div class="stat-icon blue">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="stat-label mb-1">Active Listings</p>
+                        <p class="stat-value mb-0"><%= totalListings.toLocaleString() %></p>
+                    </div>
+                    <div class="stat-icon green">
+                        <i class="fa-solid fa-house"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="stat-label mb-1">Total Bookings</p>
+                        <p class="stat-value mb-0"><%= totalBookings.toLocaleString() %></p>
+                    </div>
+                    <div class="stat-icon purple">
+                        <i class="fa-solid fa-calendar-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="stat-label mb-1">Total Revenue</p>
+                        <p class="stat-value mb-0">₹<%= revenue.totalRevenue.toLocaleString('en-IN') %></p>
+                    </div>
+                    <div class="stat-icon red">
+                        <i class="fa-solid fa-indian-rupee-sign"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secondary Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="stat-icon orange">
+                        <i class="fa-solid fa-star"></i>
+                    </div>
+                    <div>
+                        <p class="stat-label mb-0">Total Reviews</p>
+                        <p class="stat-value mb-0" style="font-size: 1.5rem;"><%= totalReviews %></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="stat-icon green">
+                        <i class="fa-solid fa-chart-simple"></i>
+                    </div>
+                    <div>
+                        <p class="stat-label mb-0">Avg. Booking Value</p>
+                        <p class="stat-value mb-0" style="font-size: 1.5rem;">₹<%= Math.round(revenue.avgBookingValue || 0).toLocaleString('en-IN') %></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="stat-icon blue">
+                        <i class="fa-solid fa-receipt"></i>
+                    </div>
+                    <div>
+                        <p class="stat-label mb-0">Paid Bookings</p>
+                        <p class="stat-value mb-0" style="font-size: 1.5rem;"><%= revenue.totalBookings %></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <a href="/admin/listings?status=pending_approval" class="text-decoration-none">
+                <div class="stat-card <%= (typeof pendingListings !== 'undefined' && pendingListings > 0) ? 'border border-warning' : '' %>">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="stat-icon yellow">
+                            <i class="fa-solid fa-clock"></i>
+                        </div>
+                        <div>
+                            <p class="stat-label mb-0">Pending Approval</p>
+                            <p class="stat-value mb-0" style="font-size: 1.5rem;"><%= typeof pendingListings !== 'undefined' ? pendingListings : 0 %></p>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Recent Bookings -->
+        <div class="col-lg-8">
+            <div class="table-card">
+                <div class="p-3 border-bottom">
+                    <h5 class="mb-0"><i class="fa-solid fa-clock-rotate-left me-2"></i>Recent Bookings</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Guest</th>
+                                <th>Listing</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% recentBookings.forEach(booking => { %>
+                            <tr>
+                                <td>
+                                    <strong><%= booking.guest ? booking.guest.username : 'N/A' %></strong>
+                                </td>
+                                <td class="text-truncate" style="max-width: 200px;">
+                                    <%= booking.listing ? booking.listing.title : 'Deleted' %>
+                                </td>
+                                <td>₹<%= booking.pricing.total.toLocaleString('en-IN') %></td>
+                                <td>
+                                    <span class="status-badge status-<%= booking.status %>">
+                                        <%= booking.status %>
+                                    </span>
+                                </td>
+                                <td><%= booking.createdAt.toLocaleDateString() %></td>
+                            </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="p-3 border-top text-center">
+                    <a href="/admin/bookings" class="text-decoration-none">View all bookings →</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Listings -->
+        <div class="col-lg-4">
+            <div class="table-card">
+                <div class="p-3 border-bottom">
+                    <h5 class="mb-0"><i class="fa-solid fa-trophy me-2"></i>Top Listings</h5>
+                </div>
+                <div class="p-3">
+                    <% topListings.forEach((item, index) => { %>
+                    <div class="d-flex align-items-center gap-3 mb-3 pb-3 <%= index < topListings.length - 1 ? 'border-bottom' : '' %>">
+                        <div class="stat-icon <%= index === 0 ? 'orange' : 'blue' %>" style="width: 40px; height: 40px; font-size: 1rem;">
+                            <%= index + 1 %>
+                        </div>
+                        <div class="flex-grow-1">
+                            <p class="mb-0 fw-semibold text-truncate" style="max-width: 180px;">
+                                <%= item.listing.title %>
+                            </p>
+                            <small class="text-muted">
+                                <%= item.bookingCount %> bookings • ₹<%= item.revenue.toLocaleString('en-IN') %>
+                            </small>
+                        </div>
+                    </div>
+                    <% }); %>
+                    <% if (topListings.length === 0) { %>
+                    <p class="text-muted text-center mb-0">No booking data yet</p>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- User Distribution -->
+            <div class="table-card mt-4">
+                <div class="p-3 border-bottom">
+                    <h5 class="mb-0"><i class="fa-solid fa-users-gear me-2"></i>User Roles</h5>
+                </div>
+                <div class="p-3">
+                    <% userStats.forEach(stat => { %>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-capitalize"><%= stat._id %></span>
+                        <span class="badge bg-secondary"><%= stat.count %></span>
+                    </div>
+                    <% }); %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

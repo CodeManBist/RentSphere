@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StayHive</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/rating.css">
+    <!-- Fixed Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Fixed Font Awesome to version 6.5.1 (7.0.1 doesn't exist) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
+    <!-- Leaflet CSS and JS for maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- Chatbot widget styles -->
+    <style>
+        .chatbot-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        .chatbot-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #fe424d 0%, #e91e63 100%);
+            border: none;
+            box-shadow: 0 4px 15px rgba(254, 66, 77, 0.4);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .chatbot-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(254, 66, 77, 0.5);
+        }
+        .chatbot-btn i {
+            color: white;
+            font-size: 24px;
+        }
+        .chatbot-panel {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 360px;
+            max-width: calc(100vw - 40px);
+            height: 500px;
+            max-height: calc(100vh - 120px);
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 9998;
+        }
+        .chatbot-panel.open {
+            display: flex;
+        }
+        .chatbot-header {
+            background: linear-gradient(135deg, #fe424d 0%, #e91e63 100%);
+            color: white;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .chatbot-header h5 {
+            margin: 0;
+            font-weight: 600;
+        }
+        .chatbot-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            opacity: 0.8;
+        }
+        .chatbot-close:hover {
+            opacity: 1;
+        }
+        .chatbot-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .chat-message {
+            max-width: 85%;
+            padding: 10px 14px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .chat-message.bot {
+            background: #f1f3f4;
+            color: #333;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        .chat-message.user {
+            background: #fe424d;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .chatbot-input-area {
+            padding: 12px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 8px;
+        }
+        .chatbot-input {
+            flex: 1;
+            border: 1px solid #ddd;
+            border-radius: 24px;
+            padding: 10px 16px;
+            font-size: 14px;
+            outline: none;
+        }
+        .chatbot-input:focus {
+            border-color: #fe424d;
+        }
+        .chatbot-send {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #fe424d;
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .chatbot-send:hover {
+            background: #e91e63;
+        }
+        .quick-replies {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .quick-reply {
+            background: white;
+            border: 1px solid #fe424d;
+            color: #fe424d;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .quick-reply:hover {
+            background: #fe424d;
+            color: white;
+        }
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 10px 14px;
+            background: #f1f3f4;
+            border-radius: 16px;
+            align-self: flex-start;
+            width: fit-content;
+        }
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #999;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-6px); }
+        }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+    <!-- Navbar -->
+    <%- include("../includes/navbar.ejs") %>
+
+    <!-- Flash messages + Page Content -->
+    <main class="flex-fill">
+        <div class="container-fluid px-0">
+            <%- include("../includes/flash.ejs") %>
+        </div>
+        <%- body %>
+    </main>
+
+    <!-- Footer -->
+    <%- include("../includes/footer.ejs") %>
+
+    <!-- Chatbot Widget -->
+    <div class="chatbot-widget">
+        <button class="chatbot-btn" id="chatbotToggle" aria-label="Open chat">
+            <i class="fa-solid fa-comments"></i>
+        </button>
+    </div>
+
+    <div class="chatbot-panel" id="chatbotPanel">
+        <div class="chatbot-header">
+            <div class="d-flex align-items-center gap-2">
+                <i class="fa-solid fa-robot"></i>
+                <h5>StayHive Assistant</h5>
+            </div>
+            <button class="chatbot-close" id="chatbotClose" aria-label="Close chat">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="chatbot-messages" id="chatMessages">
+            <div class="chat-message bot">
+                Hi! I'm your StayHive assistant. How can I help you today?
+                <div class="quick-replies">
+                    <button class="quick-reply" data-msg="How do I book a listing?">How to book?</button>
+                    <button class="quick-reply" data-msg="What is the refund policy?">Refund policy</button>
+                    <button class="quick-reply" data-msg="How do I become a host?">Become a host</button>
+                    <button class="quick-reply" data-msg="How does payment work?">Payment info</button>
+                </div>
+            </div>
+        </div>
+        <div class="chatbot-input-area">
+            <input type="text" class="chatbot-input" id="chatInput" placeholder="Type a message..." />
+            <button class="chatbot-send" id="chatSend" aria-label="Send message">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Fixed Bootstrap JS Bundle with correct version -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="/js/script.js"></script>
+    
+    <!-- Chatbot Script -->
+    <script>
+    (function() {
+        const toggle = document.getElementById('chatbotToggle');
+        const panel = document.getElementById('chatbotPanel');
+        const closeBtn = document.getElementById('chatbotClose');
+        const input = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('chatSend');
+        const messages = document.getElementById('chatMessages');
+
+        // FAQ responses
+        const faq = {
+            'book': 'To book a listing:\n1. Browse listings and select one you like\n2. Choose your dates and number of guests\n3. Click "Reserve & Pay" to secure your booking\n4. Complete payment to send your request to the host\n5. Wait for host approval (usually within 24 hours)',
+            'refund': 'Our refund policy:\n- If the host declines your booking, you get a full refund within 24 working hours\n- Guest cancellations: Depends on the listing\'s cancellation policy (Flexible, Moderate, or Strict)\n- Host cancellations: Full refund guaranteed within 24 hours',
+            'host': 'To become a host:\n1. Create an account or log in\n2. Click "Add New Listing" in the navbar\n3. Fill in your listing details (title, description, photos, price)\n4. Set your booking preferences and policies\n5. Submit and start receiving bookings!',
+            'payment': 'Payment process:\n1. Guests pay when making a booking request (before host approval)\n2. Payment is held securely until host accepts\n3. If declined, automatic refund within 24 hours\n4. We accept all major payment methods via Cashfree\n5. Hosts receive payment after guest check-in',
+            'cancel': 'To cancel a booking:\n1. Go to your dashboard (Guest or Host)\n2. Find the booking you want to cancel\n3. Click "Cancel Booking"\n4. Provide a reason (optional)\n5. Refunds are processed within 24 working hours',
+            'contact': 'You can reach us at:\n- Email: support@stayhive.com\n- This chat assistant\n- Through your dashboard messages\nWe typically respond within 24 hours.',
+            'seasonal': 'Seasonal pricing:\n- Prices may vary based on the season\n- Peak seasons (holidays, festivals) may have higher rates\n- Off-peak seasons often offer discounts\n- Check the price breakdown before booking',
+            'default': 'I\'m not sure about that. Here are some topics I can help with:\n- Booking a listing\n- Refund policies\n- Becoming a host\n- Payment information\n- Cancellation process\n\nOr contact support@stayhive.com for more help!'
+        };
+
+        function addMessage(text, isUser) {
+            const msg = document.createElement('div');
+            msg.className = 'chat-message ' + (isUser ? 'user' : 'bot');
+            msg.textContent = text;
+            messages.appendChild(msg);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function showTyping() {
+            const typing = document.createElement('div');
+            typing.className = 'typing-indicator';
+            typing.id = 'typingIndicator';
+            typing.innerHTML = '<span></span><span></span><span></span>';
+            messages.appendChild(typing);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function hideTyping() {
+            const typing = document.getElementById('typingIndicator');
+            if (typing) typing.remove();
+        }
+
+        function getResponse(msg) {
+            const lower = msg.toLowerCase();
+            if (lower.includes('book') || lower.includes('reserve') || lower.includes('how to')) return faq.book;
+            if (lower.includes('refund') || lower.includes('money back')) return faq.refund;
+            if (lower.includes('host') || lower.includes('list my') || lower.includes('become')) return faq.host;
+            if (lower.includes('pay') || lower.includes('payment') || lower.includes('cashfree')) return faq.payment;
+            if (lower.includes('cancel') || lower.includes('cancellation')) return faq.cancel;
+            if (lower.includes('contact') || lower.includes('support') || lower.includes('help')) return faq.contact;
+            if (lower.includes('season') || lower.includes('price') || lower.includes('pricing')) return faq.seasonal;
+            return faq.default;
+        }
+
+        function sendMessage(text) {
+            if (!text.trim()) return;
+            addMessage(text, true);
+            input.value = '';
+            showTyping();
+            setTimeout(() => {
+                hideTyping();
+                addMessage(getResponse(text), false);
+            }, 800 + Math.random() * 400);
+        }
+
+        toggle.addEventListener('click', () => panel.classList.add('open'));
+        closeBtn.addEventListener('click', () => panel.classList.remove('open'));
+        sendBtn.addEventListener('click', () => sendMessage(input.value));
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage(input.value);
+        });
+
+        // Quick replies
+        messages.addEventListener('click', (e) => {
+            if (e.target.classList.contains('quick-reply')) {
+                sendMessage(e.target.dataset.msg);
+            }
+        });
+    })();
+    </script>
+</body>
+</html>

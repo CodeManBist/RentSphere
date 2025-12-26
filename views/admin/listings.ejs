@@ -1,0 +1,282 @@
+<%- layout("/layouts/boilerplate") %>
+
+<style>
+    .admin-header {
+        background: linear-gradient(135deg, #fe424d 0%, #c62828 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+    }
+    .table-card {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    .table-card .table {
+        margin-bottom: 0;
+    }
+    .table-card th {
+        background: #f9fafb;
+        border-bottom: 2px solid #e5e7eb;
+        font-weight: 600;
+        color: #374151;
+    }
+    .admin-nav {
+        background: white;
+        border-radius: 1rem;
+        padding: 1rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+    }
+    .admin-nav-link {
+        padding: 0.75rem 1.25rem;
+        border-radius: 0.5rem;
+        color: #4b5563;
+        text-decoration: none;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .admin-nav-link:hover, .admin-nav-link.active {
+        background: #fe424d;
+        color: white;
+    }
+    .status-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .status-active { background: #d1fae5; color: #065f46; }
+    .status-pending_approval { background: #fef3c7; color: #92400e; }
+    .status-rejected { background: #fee2e2; color: #991b1b; }
+    .status-deleted { background: #e5e7eb; color: #374151; }
+    .listing-thumb {
+        width: 60px;
+        height: 45px;
+        object-fit: cover;
+        border-radius: 6px;
+    }
+</style>
+
+<div class="container py-4">
+    <!-- Admin Header -->
+    <div class="admin-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1 class="mb-1"><i class="fa-solid fa-house me-2"></i>Listing Management</h1>
+                <p class="mb-0 opacity-75">Review, approve, or reject user listings</p>
+            </div>
+            <% if (pendingCount > 0) { %>
+            <div class="alert alert-warning mb-0 py-2 px-3">
+                <i class="fa-solid fa-clock me-2"></i>
+                <strong><%= pendingCount %></strong> listing(s) awaiting approval
+            </div>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- Admin Navigation -->
+    <div class="admin-nav">
+        <div class="d-flex flex-wrap gap-2">
+            <a href="/admin/dashboard" class="admin-nav-link">
+                <i class="fa-solid fa-chart-line"></i> Dashboard
+            </a>
+            <a href="/admin/users" class="admin-nav-link">
+                <i class="fa-solid fa-users"></i> Users
+            </a>
+            <a href="/admin/listings" class="admin-nav-link active">
+                <i class="fa-solid fa-house"></i> Listings
+                <% if (pendingCount > 0) { %>
+                <span class="badge bg-danger"><%= pendingCount %></span>
+                <% } %>
+            </a>
+            <a href="/admin/bookings" class="admin-nav-link">
+                <i class="fa-solid fa-calendar-check"></i> Bookings
+            </a>
+            <a href="/admin/reviews" class="admin-nav-link">
+                <i class="fa-solid fa-star"></i> Reviews
+            </a>
+            <a href="/admin/payment-logs" class="admin-nav-link">
+                <i class="fa-solid fa-credit-card"></i> Payments
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" action="/admin/listings" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Search</label>
+                    <input type="text" class="form-control" name="search" placeholder="Title or location..." value="<%= query.search || '' %>">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" name="status">
+                        <option value="">All Status</option>
+                        <option value="pending_approval" <%= query.status === 'pending_approval' ? 'selected' : '' %>>Pending Approval</option>
+                        <option value="active" <%= query.status === 'active' ? 'selected' : '' %>>Active</option>
+                        <option value="rejected" <%= query.status === 'rejected' ? 'selected' : '' %>>Rejected</option>
+                        <option value="deleted" <%= query.status === 'deleted' ? 'selected' : '' %>>Deleted</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa-solid fa-filter me-1"></i>Filter
+                    </button>
+                    <a href="/admin/listings" class="btn btn-outline-secondary">Clear</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Listings Table -->
+    <div class="table-card">
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fa-solid fa-list me-2"></i>Listings (<%= totalListings %>)</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Listing</th>
+                        <th>Owner</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% listings.forEach(listing => { %>
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <% if (listing.image && listing.image.url) { %>
+                                <img src="<%= listing.image.url %>" class="listing-thumb" alt="<%= listing.title %>">
+                                <% } %>
+                                <div>
+                                    <strong class="d-block text-truncate" style="max-width: 200px;"><%= listing.title %></strong>
+                                    <small class="text-muted"><%= listing.location %>, <%= listing.country %></small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <% if (listing.owner) { %>
+                            <strong>@<%= listing.owner.username %></strong>
+                            <br><small class="text-muted"><%= listing.owner.email %></small>
+                            <% } else { %>
+                            <span class="text-muted">Unknown</span>
+                            <% } %>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary"><%= listing.parentCategory %></span>
+                            <br><small><%= listing.category %></small>
+                        </td>
+                        <td>₹<%= listing.price.toLocaleString('en-IN') %>/<%= listing.pricingUnit || 'night' %></td>
+                        <td>
+                            <span class="status-badge status-<%= listing.status %>">
+                                <%= listing.status.replace('_', ' ') %>
+                            </span>
+                        </td>
+                        <td><%= listing.createdAt.toLocaleDateString() %></td>
+                        <td>
+                            <div class="d-flex gap-1 flex-wrap">
+                                <a href="/listings/<%= listing._id %>" class="btn btn-sm btn-outline-primary" target="_blank" title="View">
+                                    <i class="fa-solid fa-eye"></i>
+                                </a>
+                                <% if (listing.status === 'pending_approval') { %>
+                                <form action="/admin/listings/<%= listing._id %>/approve" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-success" title="Approve">
+                                        <i class="fa-solid fa-check"></i>
+                                    </button>
+                                </form>
+                                <button type="button" class="btn btn-sm btn-danger" title="Reject" 
+                                        data-bs-toggle="modal" data-bs-target="#rejectModal<%= listing._id %>">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                                <% } else if (listing.status === 'rejected') { %>
+                                <form action="/admin/listings/<%= listing._id %>/approve" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Re-approve">
+                                        <i class="fa-solid fa-rotate-right"></i>
+                                    </button>
+                                </form>
+                                <% } %>
+                            </div>
+                            
+                            <!-- Reject Modal -->
+                            <div class="modal fade" id="rejectModal<%= listing._id %>" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Reject Listing</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <form action="/admin/listings/<%= listing._id %>/reject" method="POST">
+                                            <div class="modal-body">
+                                                <p>Are you sure you want to reject "<strong><%= listing.title %></strong>"?</p>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Rejection Reason</label>
+                                                    <select class="form-select mb-2" onchange="this.nextElementSibling.value = this.value === 'other' ? '' : this.value">
+                                                        <option value="Does not meet platform guidelines">Does not meet platform guidelines</option>
+                                                        <option value="Incomplete or inaccurate information">Incomplete or inaccurate information</option>
+                                                        <option value="Inappropriate content or images">Inappropriate content or images</option>
+                                                        <option value="Suspected fraudulent listing">Suspected fraudulent listing</option>
+                                                        <option value="Duplicate listing">Duplicate listing</option>
+                                                        <option value="other">Other (specify below)</option>
+                                                    </select>
+                                                    <textarea name="reason" class="form-control" rows="2" 
+                                                              placeholder="Enter reason...">Does not meet platform guidelines</textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="submit" class="btn btn-danger">Reject Listing</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <% }) %>
+                    
+                    <% if (listings.length === 0) { %>
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <i class="fa-solid fa-inbox fa-2x text-muted mb-2"></i>
+                            <p class="text-muted mb-0">No listings found</p>
+                        </td>
+                    </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        <% if (totalPages > 1) { %>
+        <div class="p-3 border-top">
+            <nav>
+                <ul class="pagination pagination-sm mb-0 justify-content-center">
+                    <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                        <a class="page-link" href="?page=<%= currentPage - 1 %>&status=<%= query.status || '' %>&search=<%= query.search || '' %>">Previous</a>
+                    </li>
+                    <% for (let i = 1; i <= totalPages; i++) { %>
+                    <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                        <a class="page-link" href="?page=<%= i %>&status=<%= query.status || '' %>&search=<%= query.search || '' %>"><%= i %></a>
+                    </li>
+                    <% } %>
+                    <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                        <a class="page-link" href="?page=<%= currentPage + 1 %>&status=<%= query.status || '' %>&search=<%= query.search || '' %>">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        <% } %>
+    </div>
+</div>

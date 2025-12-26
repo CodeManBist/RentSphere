@@ -1,0 +1,64 @@
+<%- layout('/layouts/boilerplate') %>
+
+<script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
+
+<div class="container text-center mt-5">
+  <div class="card shadow-sm mx-auto" style="max-width: 500px;">
+    <div class="card-body py-5">
+      <div class="spinner-border text-primary mb-3" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <h2>Redirecting to Secure Payment...</h2>
+      <p class="text-muted">Please wait while we connect you to our payment partner.</p>
+      
+      <!-- Added safe navigation for booking object -->
+      <% if (booking) { %>
+      <div class="mt-4 text-start border-top pt-3">
+        <p class="mb-1"><strong>Booking:</strong> <%= booking.listing && booking.listing.title ? booking.listing.title : 'Your Booking' %></p>
+        <p class="mb-1"><strong>Amount:</strong> ₹<%= booking.pricing && booking.pricing.total ? booking.pricing.total.toLocaleString('en-IN') : 'N/A' %></p>
+      </div>
+      <% } %>
+      
+      <!-- Fallback button in case auto-redirect fails -->
+      <div class="mt-4">
+        <button id="manualPayBtn" class="btn btn-primary d-none" onclick="initiatePayment()">
+          Click here if not redirected
+        </button>
+      </div>
+      
+      <!-- Error display area -->
+      <div id="paymentError" class="alert alert-danger mt-3 d-none"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function initiatePayment() {
+    try {
+      const cashfree = Cashfree({
+        mode: "<%= cashfreeMode %>"
+      });
+
+      cashfree.checkout({
+        paymentSessionId: "<%= paymentSessionId %>",
+        redirectTarget: "_self"
+      });
+    } catch (error) {
+      console.error('Payment initialization error:', error);
+      document.getElementById('paymentError').textContent = 'Unable to initialize payment. Please try again.';
+      document.getElementById('paymentError').classList.remove('d-none');
+      document.getElementById('manualPayBtn').classList.remove('d-none');
+    }
+  }
+
+  // Auto-initiate payment
+  initiatePayment();
+  
+  // Show manual button after 3 seconds if still on page
+  setTimeout(function() {
+    const btn = document.getElementById('manualPayBtn');
+    if (btn) {
+      btn.classList.remove('d-none');
+    }
+  }, 3000);
+</script>

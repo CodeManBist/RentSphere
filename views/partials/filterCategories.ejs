@@ -1,0 +1,107 @@
+<!-- Cleaned up filter categories with consistent styling -->
+
+<!-- All Listings -->
+<a href="/listings" class="filter <%= (!selectedParent && !selectedCategory) ? 'active' : '' %>">
+    <i class="fa-solid fa-globe"></i>
+    <p>All</p>
+</a>
+
+<!-- STAYS -->
+<a href="/listings/category/stays" class="filter <%= selectedParent === 'stays' && !selectedCategory ? 'active' : '' %>">
+    <i class="fa-solid fa-house"></i>
+    <p>Stays</p>
+</a>
+
+<a href="/listings/category/stays/houses" class="filter <%= selectedCategory === 'houses' ? 'active' : '' %>">
+    <i class="fa-solid fa-house-chimney"></i>
+    <p>Houses</p>
+</a>
+
+<a href="/listings/category/stays/private-rooms" class="filter <%= selectedCategory === 'private-rooms' ? 'active' : '' %>">
+    <i class="fa-solid fa-bed"></i>
+    <p>Rooms</p>
+</a>
+
+<a href="/listings/category/stays/villas" class="filter <%= selectedCategory === 'villas' ? 'active' : '' %>">
+    <i class="fa-solid fa-hotel"></i>
+    <p>Villas</p>
+</a>
+
+<a href="/listings/category/stays/farm-stays" class="filter <%= selectedCategory === 'farm-stays' ? 'active' : '' %>">
+    <i class="fa-solid fa-cow"></i>
+    <p>Farms</p>
+</a>
+
+<a href="/listings/category/stays/treehouses" class="filter <%= selectedCategory === 'treehouses' ? 'active' : '' %>">
+    <i class="fa-solid fa-tree"></i>
+    <p>Treehouses</p>
+</a>
+
+<!-- VEHICLES -->
+<a href="/listings/category/vehicles" class="filter <%= selectedParent === 'vehicles' && !selectedCategory ? 'active' : '' %>">
+    <i class="fa-solid fa-car"></i>
+    <p>Vehicles</p>
+</a>
+
+<a href="/listings/category/vehicles/cars" class="filter <%= selectedCategory === 'cars' ? 'active' : '' %>">
+    <i class="fa-solid fa-car-side"></i>
+    <p>Cars</p>
+</a>
+
+<a href="/listings/category/vehicles/bikes" class="filter <%= selectedCategory === 'bikes' ? 'active' : '' %>">
+    <i class="fa-solid fa-motorcycle"></i>
+    <p>Bikes</p>
+</a>
+
+<a href="/listings/category/vehicles/evs" class="filter <%= selectedCategory === 'evs' ? 'active' : '' %>">
+    <i class="fa-solid fa-charging-station"></i>
+    <p>EVs</p>
+</a>
+
+<!-- EQUIPMENT -->
+<a href="/listings/category/equipment" class="filter <%= selectedParent === 'equipment' && !selectedCategory ? 'active' : '' %>">
+    <i class="fa-solid fa-camera"></i>
+    <p>Equipment</p>
+</a>
+
+<a href="/listings/category/equipment/cameras" class="filter <%= selectedCategory === 'cameras' ? 'active' : '' %>">
+    <i class="fa-solid fa-camera-retro"></i>
+    <p>Cameras</p>
+</a>
+
+<a href="/listings/category/equipment/drones" class="filter <%= selectedCategory === 'drones' ? 'active' : '' %>">
+    <i class="fa-solid fa-helicopter"></i>
+    <p>Drones</p>
+</a>
+
+<!-- ADVENTURE -->
+<a href="/listings/category/adventure" class="filter <%= selectedParent === 'adventure' && !selectedCategory ? 'active' : '' %>">
+    <i class="fa-solid fa-compass"></i>
+    <p>Adventure</p>
+</a>
+
+<a href="/listings/category/adventure/tents" class="filter <%= selectedCategory === 'tents' ? 'active' : '' %>">
+    <i class="fa-solid fa-campground"></i>
+    <p>Tents</p>
+</a>
+
+<a href="/listings/category/adventure/kayaks" class="filter <%= selectedCategory === 'kayaks' ? 'active' : '' %>">
+    <i class="fa-solid fa-water"></i>
+    <p>Kayaks</p>
+</a>
+
+<!-- PROFESSIONAL -->
+<a href="/listings/category/professional" class="filter <%= selectedParent === 'professional' && !selectedCategory ? 'active' : '' %>">
+    <i class="fa-solid fa-briefcase"></i>
+    <p>Spaces</p>
+</a>
+
+<a href="/listings/category/professional/coworking" class="filter <%= selectedCategory === 'coworking' ? 'active' : '' %>">
+    <i class="fa-solid fa-laptop"></i>
+    <p>Co-work</p>
+</a>
+
+<a href="/listings/category/professional/event-halls" class="filter <%= selectedCategory === 'event-halls' ? 'active' : '' %>">
+    <i class="fa-solid fa-champagne-glasses"></i>
+    <p>Events</p>
+</a>

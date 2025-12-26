@@ -1,0 +1,609 @@
+<%- layout("/layouts/boilerplate") %>
+
+<!-- Admin Banner -->
+<% if (currUser && currUser.role === "admin") { %>
+<div class="container-fluid px-3 px-lg-4 mt-3">
+  <div class="alert alert-danger d-flex align-items-center mb-0">
+    <i class="fa-solid fa-shield-halved me-2"></i>
+    <strong>Admin Mode:</strong>&nbsp;You are viewing and managing all listings.
+  </div>
+</div>
+<% } %>
+
+<!-- Search Results Header -->
+<% if (typeof searchParams !== 'undefined' && searchParams && searchParams.q) { %>
+<div class="container-fluid px-3 px-lg-4 mt-3">
+  <div class="d-flex flex-wrap align-items-center gap-2">
+    <span class="text-muted">Showing results for:</span>
+    <span class="badge bg-dark fs-6"><%= searchParams.q %></span>
+    <% if (searchParams.minPrice || searchParams.maxPrice) { %>
+    <span class="badge bg-secondary">
+      <%= searchParams.minPrice ? '₹' + searchParams.minPrice : '' %> 
+      <%= searchParams.minPrice && searchParams.maxPrice ? '-' : '' %>
+      <%= searchParams.maxPrice ? '₹' + searchParams.maxPrice : '' %>
+    </span>
+    <% } %>
+    <% if (searchParams.guests) { %>
+    <span class="badge bg-secondary"><%= searchParams.guests %> guest<%= searchParams.guests > 1 ? 's' : '' %></span>
+    <% } %>
+    <a href="/listings" class="btn btn-sm btn-outline-secondary ms-2">
+      <i class="fa-solid fa-times me-1"></i>Clear
+    </a>
+  </div>
+  <p class="text-muted mt-2 mb-0"><%= allListings.length %> listing<%= allListings.length !== 1 ? 's' : '' %> found</p>
+</div>
+<% } %>
+
+<!-- Completely redesigned filter section with proper responsive styling -->
+<div class="filter-section">
+  <div class="container-fluid px-3 px-lg-4">
+    <div class="d-flex align-items-center gap-2 gap-lg-3">
+      
+      <!-- Filter Slider Wrapper -->
+      <div class="filter-slider-wrapper">
+        <button class="filter-scroll-btn filter-scroll-left" type="button" id="filterScrollLeft" aria-label="Scroll left">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        
+        <div class="filter-slider" id="filterSlider">
+          <div class="filter-items-row">
+            <%- include("../partials/filterCategories") %>
+          </div>
+        </div>
+        
+        <button class="filter-scroll-btn filter-scroll-right" type="button" id="filterScrollRight" aria-label="Scroll right">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+      </div>
+      
+      <!-- Desktop Filter Button -->
+      <button class="advanced-filter-btn d-none d-md-flex" type="button" data-bs-toggle="offcanvas" data-bs-target="#filtersSidebar">
+        <i class="fa-solid fa-sliders"></i>
+        <span>Filters</span>
+      </button>
+      
+      <!-- Desktop Tax Toggle -->
+      <div class="tax-toggle-wrapper d-none d-lg-flex">
+        <span class="small text-muted me-2">Show taxes</span>
+        <div class="form-check form-switch mb-0">
+          <input class="form-check-input" type="checkbox" id="taxToggle" role="switch">
+        </div>
+      </div>
+    </div>
+    
+    <!-- Mobile Controls -->
+    <div class="d-flex d-md-none mt-3 gap-2">
+      <button class="btn btn-outline-secondary btn-sm flex-grow-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#filtersSidebar">
+        <i class="fa-solid fa-sliders me-1"></i>Filters
+      </button>
+      <div class="d-flex align-items-center gap-2 px-3 py-1 border rounded">
+        <span class="small text-muted">Taxes</span>
+        <div class="form-check form-switch mb-0">
+          <input class="form-check-input" type="checkbox" id="taxToggleMobile" role="switch" style="margin-left: 0;">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Filters Sidebar Offcanvas -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="filtersSidebar">
+  <div class="offcanvas-header border-bottom">
+    <h5 class="offcanvas-title">
+      <i class="fa-solid fa-sliders me-2"></i>Filters
+    </h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body">
+    <form action="/listings/search" method="get" id="advancedFiltersForm">
+      <% if (typeof searchParams !== 'undefined' && searchParams && searchParams.q) { %>
+      <input type="hidden" name="q" value="<%= searchParams.q %>">
+      <% } %>
+      
+      <!-- Price Range -->
+      <div class="mb-4">
+        <h6 class="fw-bold mb-3">Price Range</h6>
+        <div class="row g-2">
+          <div class="col-6">
+            <label class="form-label small text-muted">Minimum</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text">₹</span>
+              <input type="number" class="form-control" name="minPrice" placeholder="0" value="<%= typeof searchParams !== 'undefined' && searchParams && searchParams.minPrice ? searchParams.minPrice : '' %>">
+            </div>
+          </div>
+          <div class="col-6">
+            <label class="form-label small text-muted">Maximum</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text">₹</span>
+              <input type="number" class="form-control" name="maxPrice" placeholder="Any" value="<%= typeof searchParams !== 'undefined' && searchParams && searchParams.maxPrice ? searchParams.maxPrice : '' %>">
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <hr>
+      
+      <!-- Category -->
+      <div class="mb-4">
+        <h6 class="fw-bold mb-3">Category</h6>
+        <select class="form-select form-select-sm" name="parentCategory">
+          <option value="">All Categories</option>
+          <option value="stays">Stays</option>
+          <option value="vehicles">Vehicles</option>
+          <option value="equipment">Equipment</option>
+          <option value="adventure">Adventure</option>
+          <option value="professional">Professional</option>
+        </select>
+      </div>
+      
+      <hr>
+      
+      <!-- Guest Count -->
+      <div class="mb-4">
+        <h6 class="fw-bold mb-3">Guests</h6>
+        <select class="form-select form-select-sm" name="guests">
+          <option value="">Any</option>
+          <option value="1">1 guest</option>
+          <option value="2">2 guests</option>
+          <option value="3">3 guests</option>
+          <option value="4">4 guests</option>
+          <option value="5">5+ guests</option>
+        </select>
+      </div>
+      
+      <hr>
+      
+      <!-- Amenities -->
+      <div class="mb-4">
+        <h6 class="fw-bold mb-3">Amenities</h6>
+        <div class="row g-2">
+          <div class="col-6">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="amenities" value="wifi" id="amenityWifi">
+              <label class="form-check-label small" for="amenityWifi">
+                <i class="fa-solid fa-wifi me-1"></i>Wifi
+              </label>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="amenities" value="pool" id="amenityPool">
+              <label class="form-check-label small" for="amenityPool">
+                <i class="fa-solid fa-water-ladder me-1"></i>Pool
+              </label>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="amenities" value="parking" id="amenityParking">
+              <label class="form-check-label small" for="amenityParking">
+                <i class="fa-solid fa-car me-1"></i>Parking
+              </label>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="amenities" value="ac" id="amenityAc">
+              <label class="form-check-label small" for="amenityAc">
+                <i class="fa-solid fa-snowflake me-1"></i>AC
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <hr>
+      
+      <!-- Sort By -->
+      <div class="mb-4">
+        <h6 class="fw-bold mb-3">Sort By</h6>
+        <select class="form-select form-select-sm" name="sortBy">
+          <option value="relevance">Best Match</option>
+          <option value="price_low">Price: Low to High</option>
+          <option value="price_high">Price: High to Low</option>
+          <option value="newest">Newest First</option>
+          <option value="rating">Top Rated</option>
+        </select>
+      </div>
+    </form>
+  </div>
+  <div class="offcanvas-footer border-top p-3 bg-white">
+    <div class="d-flex gap-2">
+      <a href="/listings" class="btn btn-outline-dark flex-grow-1">Clear All</a>
+      <button type="submit" form="advancedFiltersForm" class="btn flex-grow-1" style="background: #fe424d; color: white;">
+        Show Results
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- LISTINGS GRID -->
+<div class="container-fluid px-3 px-lg-4 py-4">
+    <div class="row g-3 g-lg-4">
+        <% for (let listing of allListings) { %>
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xxl-2">
+            <div class="listing-card card h-100 border-0 shadow-sm position-relative">
+                <% if (currUser && currUser.role === "admin") { %>
+                <div class="position-absolute top-0 start-0 m-2 badge bg-danger z-1">Admin</div>
+                <% } %>
+                <% if (typeof listing.relevanceScore !== 'undefined' && listing.relevanceScore && listing.relevanceScore > 50) { %>
+                <div class="position-absolute top-0 end-0 m-2 badge bg-success z-1">
+                    <i class="fa-solid fa-star me-1"></i>Top Match
+                </div>
+                <% } %>
+
+                <img src="<%= listing.image.url %>" class="card-img-top" style="height: 180px; object-fit: cover;" alt="<%= listing.title %>">
+
+                <div class="card-body p-3">
+                    <h6 class="card-title mb-1 text-truncate fw-semibold">
+                        <% if (currUser && currUser.role === "admin") { %>
+                        <i class="fa-solid fa-shield-halved text-danger me-1"></i>
+                        <% } %>
+                        <%= listing.title %>
+                    </h6>
+                    
+                    <p class="small text-muted mb-2 text-truncate">
+                      <i class="fa-solid fa-location-dot me-1"></i><%= listing.location %>, <%= listing.country %>
+                    </p>
+
+                    <div class="d-flex align-items-center justify-content-between">
+                        <span class="text-dark fw-semibold">
+                            ₹<%= listing.price.toLocaleString("en-IN") %>
+                            <span class="fw-normal text-muted small">/ night</span>
+                            <span class="tax-info text-muted small" style="display: none;"> +18% GST</span>
+                        </span>
+                        <span class="badge bg-light text-dark border">
+                          <i class="fa-solid fa-user me-1"></i><%= listing.maxGuests || 4 %>
+                        </span>
+                    </div>
+
+                    <% if (currUser && currUser.role === "admin") { %>
+                    <hr class="my-2">
+                    <p class="small mb-1 text-muted">
+                      <strong>Owner:</strong>
+                      <% if (listing.owner) { %>
+                        @<%= listing.owner.username %>
+                      <% } else { %>
+                      <span class="text-danger">[Deleted User]</span>
+                      <% } %>
+                    </p>
+                    <p class="small mb-2 text-muted"><strong>Created:</strong> <%= listing.createdAt.toLocaleDateString() %></p>
+                    <div class="d-flex gap-1">
+                        <a href="/listings/<%= listing._id %>" class="btn btn-sm btn-outline-primary flex-fill">
+                            <i class="fa-solid fa-eye"></i>
+                        </a>
+                        <a href="/listings/<%= listing._id %>/edit" class="btn btn-sm btn-warning flex-fill">
+                            <i class="fa-solid fa-edit"></i>
+                        </a>
+                        <form action="/listings/<%= listing._id %>?_method=DELETE" method="POST" class="flex-fill">
+                            <button class="btn btn-sm btn-danger w-100"><i class="fa-solid fa-trash"></i></button>
+                        </form>
+                    </div>
+                    <% } else { %>
+                    <a href="/listings/<%= listing._id %>" class="stretched-link"></a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+        <% } %>
+        
+        <% if (allListings.length === 0) { %>
+        <div class="col-12 text-center py-5">
+          <i class="fa-solid fa-search fa-3x text-muted mb-3"></i>
+          <h4>No listings found</h4>
+          <p class="text-muted">Try adjusting your search or filters to find what you're looking for.</p>
+          <a href="/listings" class="btn btn-outline-dark">View All Listings</a>
+        </div>
+        <% } %>
+    </div>
+</div>
+
+<!-- Complete rewrite of filter styles with proper responsive behavior -->
+<style>
+/* Filter Section */
+.filter-section {
+  background: #fff;
+  padding: 16px 0;
+  border-bottom: 1px solid #ebebeb;
+  position: sticky;
+  top: 56px;
+  z-index: 100;
+}
+
+/* Filter Slider Wrapper */
+.filter-slider-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Filter Slider */
+.filter-slider {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-behavior: smooth;
+  padding: 4px 0;
+  margin: 0 44px;
+}
+
+.filter-slider::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-items-row {
+  display: flex;
+  gap: 10px;
+  width: max-content;
+}
+
+/* Scroll Buttons */
+.filter-scroll-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid #ddd;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  cursor: pointer;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  color: #222;
+}
+
+.filter-scroll-btn:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  border-color: #222;
+}
+
+.filter-scroll-btn:disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.filter-scroll-left {
+  left: 0;
+}
+
+.filter-scroll-right {
+  right: 0;
+}
+
+/* Filter Items */
+.filter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  min-width: 64px;
+  border-radius: 12px;
+  color: #717171;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  background: transparent;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.filter:hover {
+  background: #f7f7f7;
+  color: #222;
+}
+
+.filter.active {
+  color: #222;
+  border-color: #222;
+  background: #f7f7f7;
+}
+
+.filter i {
+  font-size: 20px;
+  margin-bottom: 6px;
+}
+
+.filter p {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* Advanced Filter Button */
+.advanced-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #222;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.advanced-filter-btn:hover {
+  border-color: #222;
+}
+
+/* Tax Toggle */
+.tax-toggle-wrapper {
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+/* Listing Cards */
+.listing-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.listing-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
+}
+
+.listing-card .card-img-top {
+  border-radius: 12px 12px 0 0;
+}
+
+/* Large Screen Improvements */
+@media (min-width: 992px) {
+  .filter-slider {
+    margin: 0 48px;
+  }
+  
+  .filter-scroll-btn {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .filter {
+    padding: 12px 16px;
+    min-width: 72px;
+  }
+  
+  .filter i {
+    font-size: 22px;
+  }
+  
+  .filter p {
+    font-size: 12px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .filter-slider {
+    margin: 0 52px;
+  }
+  
+  .filter-scroll-btn {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .filter {
+    padding: 12px 20px;
+    min-width: 80px;
+  }
+}
+
+@media (min-width: 1400px) {
+  .filter {
+    padding: 14px 24px;
+    min-width: 88px;
+  }
+  
+  .filter i {
+    font-size: 24px;
+  }
+  
+  .filter p {
+    font-size: 13px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  .filter-section {
+    padding: 12px 0;
+  }
+  
+  .filter-slider {
+    margin: 0 36px;
+  }
+  
+  .filter-scroll-btn {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .filter {
+    padding: 8px 12px;
+    min-width: 56px;
+  }
+  
+  .filter i {
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+  
+  .filter p {
+    font-size: 10px;
+  }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Tax toggle functionality
+  const taxToggle = document.getElementById('taxToggle');
+  const taxToggleMobile = document.getElementById('taxToggleMobile');
+  
+  function toggleTaxInfo(show) {
+    document.querySelectorAll('.tax-info').forEach(function(info) {
+      info.style.display = show ? 'inline' : 'none';
+    });
+  }
+  
+  if (taxToggle) {
+    taxToggle.addEventListener('change', function() {
+      toggleTaxInfo(this.checked);
+      if (taxToggleMobile) taxToggleMobile.checked = this.checked;
+    });
+  }
+  
+  if (taxToggleMobile) {
+    taxToggleMobile.addEventListener('change', function() {
+      toggleTaxInfo(this.checked);
+      if (taxToggle) taxToggle.checked = this.checked;
+    });
+  }
+  
+  const filterSlider = document.getElementById('filterSlider');
+  const scrollLeftBtn = document.getElementById('filterScrollLeft');
+  const scrollRightBtn = document.getElementById('filterScrollRight');
+  
+  if (filterSlider && scrollLeftBtn && scrollRightBtn) {
+    const scrollAmount = 200;
+    
+    function updateScrollButtons() {
+      const scrollLeft = filterSlider.scrollLeft;
+      const maxScroll = filterSlider.scrollWidth - filterSlider.clientWidth;
+      
+      scrollLeftBtn.disabled = scrollLeft <= 5;
+      scrollRightBtn.disabled = scrollLeft >= maxScroll - 5;
+    }
+    
+    scrollLeftBtn.addEventListener('click', function() {
+      filterSlider.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+    });
+    
+    scrollRightBtn.addEventListener('click', function() {
+      filterSlider.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    });
+    
+    filterSlider.addEventListener('scroll', updateScrollButtons);
+    window.addEventListener('resize', updateScrollButtons);
+    
+    // Initial check after a short delay
+    setTimeout(updateScrollButtons, 100);
+    updateScrollButtons();
+  }
+});
+</script>

@@ -1,0 +1,132 @@
+<%- layout('/layouts/boilerplate') %>
+
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+
+      <div class="card shadow-sm">
+
+        <!-- HEADER -->
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <h3 class="mb-0">Booking Details</h3>
+
+          <!-- STATUS BADGE -->
+          <span class="badge bg-<%= 
+            booking.status === 'confirmed' ? 'success' : 
+            booking.status === 'pending' ? 'warning' : 'danger' 
+          %> text-capitalize">
+            <%= booking.status %>
+          </span>
+        </div>
+
+        <div class="card-body">
+
+          <!-- BOOKING INFO -->
+          <div class="row mb-4">
+            <div class="col-4">
+              <% if (booking.listing && booking.listing.image && booking.listing.image.url) { %>
+                <img src="<%= booking.listing.image.url %>" class="img-fluid rounded" alt="<%= booking.listing.title %>">
+              <% } else { %>
+                <div class="bg-light text-muted p-4 rounded text-center">
+                  No Image
+                </div>
+              <% } %>
+            </div>
+
+            <div class="col-8">
+              <h5>
+                <%= booking.listing ? booking.listing.title : "Listing Deleted" %>
+              </h5>
+
+              <% if (booking.listing) { %>
+                <p class="text-muted mb-2">
+                  <i class="fa-solid fa-location-dot me-1"></i>
+                  <%= booking.listing.location %>, <%= booking.listing.country %>
+                </p>
+              <% } %>
+
+              <p class="mb-2">
+                <strong>Dates:</strong>
+                <%= booking.checkIn.toLocaleDateString() %> -
+                <%= booking.checkOut.toLocaleDateString() %>
+                (<%= booking.pricing.nights %> nights)
+              </p>
+
+              <p class="mb-2">
+                <strong>Guests:</strong> <%= booking.guestCount.adults %>
+              </p>
+
+              <% if (booking.guestMessage) { %>
+                <p class="mb-2">
+                  <strong>Message:</strong> "<%= booking.guestMessage %>"
+                </p>
+              <% } %>
+
+              <!-- PAYMENT STATUS -->
+              <p class="fw-bold mb-0">
+                <% if (booking.payment && booking.payment.status === 'paid') { %>
+                  <span class="badge bg-success">Payment Successful</span>
+                <% } else { %>
+                  <span class="badge bg-warning text-dark">Payment Pending</span>
+                <% } %>
+              </p>
+            </div>
+          </div>
+
+          <!-- PRICE BREAKDOWN -->
+          <div class="mb-4">
+            <h5 class="border-bottom pb-2">Price Breakdown</h5>
+
+            <div class="d-flex justify-content-between mb-2">
+              <span>₹<%= booking.pricing.nightlyRate %> × <%= booking.pricing.nights %> nights</span>
+              <span>₹<%= booking.pricing.basePrice %></span>
+            </div>
+
+            <div class="d-flex justify-content-between mb-2">
+              <span>Service Fee</span>
+              <span>₹<%= booking.pricing.serviceFee %></span>
+            </div>
+
+            <hr>
+
+            <div class="d-flex justify-content-between fw-bold fs-5">
+              <span>Total</span>
+              <span class="text-primary">₹<%= booking.pricing.total %></span>
+            </div>
+          </div>
+
+          <!-- ACTIONS -->
+          <div class="d-flex gap-2 align-items-center flex-wrap">
+
+            <!-- CANCEL BOOKING (guest or host, as long as not cancelled) -->
+            <% if (booking.status !== 'cancelled') { %>
+              <form 
+                action="/bookings/booking/<%= booking._id %>/cancel" 
+                method="POST"
+              >
+                <button 
+                  class="btn btn-outline-danger"
+                  onclick="return confirm('Cancel this booking?')"
+                >
+                  <i class="fa-solid fa-xmark me-1"></i>Cancel Booking
+                </button>
+              </form>
+            <% } %>
+
+            <!-- BACK BUTTON -->
+            <a 
+              href="<%= booking.listing ? ('/listings/' + booking.listing._id) : '/listings' %>" 
+              class="btn btn-outline-secondary ms-auto"
+            >
+              <i class="fa-solid fa-arrow-left me-1"></i>
+              Back to Listing
+            </a>
+
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -1,0 +1,389 @@
+<%- layout('/layouts/boilerplate') %>
+
+<div class="container-fluid px-2 px-md-3 px-lg-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-10 col-xl-8">
+            <!-- Title Section -->
+            <div class="text-center mb-4">
+                <h2 class="h1 mb-1"><%= listing.title %></h2>
+                <p class="text-muted mb-0">
+                    <span class="badge bg-secondary me-2">
+                        <%= listing.parentCategory ? listing.parentCategory.charAt(0).toUpperCase() + listing.parentCategory.slice(1) : 'Stay' %>
+                    </span>
+                    <i class="fa-solid fa-location-dot me-1"></i>
+                    <%= listing.location %>, <%= listing.country %>
+                </p>
+            </div>    
+
+            <!-- Listing Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="position-relative">
+                    <% if (listing.status === 'deleted' || !listing.image || !listing.image.url) { %>
+                        <div class="bg-light d-flex align-items-center justify-content-center" style="height: 400px;">
+                            <div class="text-center text-muted">
+                                <i class="fa-solid fa-image fa-3x mb-3"></i>
+                                <p>Listing Removed</p>
+                            </div>
+                        </div>
+                    <% } else { %>
+                        <img src="<%= listing.image.url %>" class="card-img-top img-fluid" alt="<%= listing.title %>" style="height: 400px; object-fit: cover;">
+                    <% } %>
+                    
+                    <!-- Seasonal Pricing Badge -->
+                    <% if (typeof currentSeason !== 'undefined' && currentSeason && currentSeason.multiplier !== 1.0) { %>
+                    <div class="position-absolute top-0 end-0 m-3">
+                        <span class="badge <%= currentSeason.multiplier > 1 ? 'bg-warning' : 'bg-success' %> px-3 py-2">
+                            <i class="fa-solid fa-<%= currentSeason.multiplier > 1 ? 'fire' : 'tag' %> me-1"></i>
+                            <%= currentSeason.name %>
+                            (<%= currentSeason.multiplier > 1 ? '+' : '' %><%= Math.round((currentSeason.multiplier - 1) * 100) %>%)
+                        </span>
+                    </div>
+                    <% } %>
+                </div>
+                <div class="card-body p-3 p-md-4">
+                    <div class="row">
+                        <div class="col-12 col-md-8">
+                            <p class="card-text mb-2"><strong>Owned by</strong> <i><%= listing.owner.username %></i></p>
+                            <p class="card-text mb-3"><%= listing.description %></p>
+                            <p class="card-text mb-2">
+                                <span class="h4 text-primary">₹<%= listing.price.toLocaleString("en-IN") %></span>
+                                <span class="text-muted">/ <%= listing.pricingUnit || 'night' %></span>
+                            </p>
+                            
+                            <!-- Listing Details -->
+                            <div class="d-flex flex-wrap gap-3 mb-3">
+                                <span class="badge bg-light text-dark">
+                                    <i class="fa-solid fa-users me-1"></i>Max <%= listing.maxGuests || 4 %> guests
+                                </span>
+                                <% if (listing.policies && listing.policies.petsAllowed) { %>
+                                <span class="badge bg-light text-dark">
+                                    <i class="fa-solid fa-paw me-1"></i>Pets allowed
+                                </span>
+                                <% } %>
+                                <% if (listing.bookingSettings && listing.bookingSettings.instantBook) { %>
+                                <span class="badge bg-success">
+                                    <i class="fa-solid fa-bolt me-1"></i>Instant Book
+                                </span>
+                                <% } %>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4 d-flex flex-column justify-content-end">
+                            <% if(currUser && listing.owner._id.equals(currUser._id)) { %>
+                            <div class="d-flex flex-column flex-sm-row gap-2 mb-3">
+                                <a class="btn btn-dark px-4" href="/listings/<%= listing._id %>/edit">
+                                    <i class="fa-solid fa-edit me-1"></i>Edit
+                                </a>
+                                <form class="m-0" action="/listings/<%= listing._id %>?_method=DELETE" method="post">
+                                    <button class="btn btn-outline-danger px-4 w-100" type="submit">
+                                        <i class="fa-solid fa-trash me-1"></i>Delete
+                                    </button>
+                                </form>
+                            </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Simplified booking section - removed unnecessary info alert -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h4 class="mb-3">
+                        <i class="fa-solid fa-calendar me-2 text-primary"></i>Book Now
+                    </h4>
+    
+                    <% if (currUser && !listing.owner._id.equals(currUser._id)) { %>
+                    <form method="POST" action="/payments/pay/<%= listing._id %>" class="row g-3 align-items-end" id="bookingForm">
+                        <div class="col-12 col-md-3">
+                            <label class="form-label fw-semibold">Check-in</label>
+                            <input type="date" id="checkIn" name="checkIn" class="form-control" required 
+                                   min="<%= new Date().toISOString().split('T')[0] %>">
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label class="form-label fw-semibold">Check-out</label>
+                            <input type="date" id="checkOut" name="checkOut" class="form-control" required>
+                        </div>
+                        <div class="col-12 col-md-2">
+                            <label class="form-label fw-semibold">Guests</label>
+                            <select id="guests" name="guests" class="form-select" required>
+                                <% for(let i = 1; i <= (listing.maxGuests || 4); i++) { %>
+                                    <option value="<%= i %>"><%= i %></option>
+                                <% } %>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <button type="submit" class="btn btn-primary w-100" id="bookBtn">
+                                <i class="fa-solid fa-credit-card me-1"></i>Reserve & Pay
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Pricing Preview -->
+                    <div id="pricingPreview" class="mt-3 d-none">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title mb-3">Price Breakdown</h6>
+                                <div id="pricingDetails"></div>
+                            </div>
+                        </div>
+                    </div>
+      
+                    <% } else if (!currUser) { %>
+                    <div class="alert alert-info mb-0">
+                        <i class="fa-solid fa-info-circle me-2"></i>
+                        Please <a href="/login" class="alert-link">log in</a> to check availability and book.
+                    </div>
+                    <% } else { %>
+                    <div class="alert alert-secondary mb-0">
+                        <i class="fa-solid fa-house-user me-2"></i>
+                        This is your listing. Guests will see booking options here.
+                    </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Recommendations Section -->
+            <% if (typeof recommendations !== 'undefined' && recommendations && recommendations.length > 0) { %>
+            <div class="mb-4">
+                <h4 class="mb-3">
+                    <i class="fa-solid fa-heart me-2 text-danger"></i>Similar Listings
+                </h4>
+                <div class="row g-3">
+                    <% recommendations.forEach(rec => { %>
+                    <div class="col-6 col-md-3">
+                        <a href="/listings/<%= rec._id %>" class="text-decoration-none">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <img src="<%= rec.image?.url || '/placeholder.jpg' %>" 
+                                     class="card-img-top" 
+                                     style="height: 120px; object-fit: cover;" 
+                                     alt="<%= rec.title %>">
+                                <div class="card-body p-2">
+                                    <h6 class="card-title text-truncate mb-1 text-dark"><%= rec.title %></h6>
+                                    <p class="card-text text-primary mb-0 small">
+                                        ₹<%= rec.price.toLocaleString('en-IN') %>/<%= rec.pricingUnit || 'night' %>
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <% }) %>
+                </div>
+            </div>
+            <% } %>
+
+            <!-- Reviews Section -->
+            <div class="mb-4">
+                <hr class="my-4">
+                <% if(currUser) { %>
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-3 p-md-4">
+                        <h4 class="mb-3">
+                            <i class="fa-solid fa-star me-2 text-warning"></i>Leave a Review
+                        </h4>
+                        <form action="/listings/<%= listing._id %>/reviews" method="post" class="needs-validation">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold" for="rating">Rating</label>
+                                <fieldset class="starability-slot">
+                                    <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="1" checked aria-label="No rating." />
+                                    <input type="radio" id="first-rate1" name="review[rating]" value="1" />
+                                    <label for="first-rate1" title="Terrible">1 star</label>
+                                    <input type="radio" id="first-rate2" name="review[rating]" value="2" />
+                                    <label for="first-rate2" title="Not good">2 stars</label>
+                                    <input type="radio" id="first-rate3" name="review[rating]" value="3" />
+                                    <label for="first-rate3" title="Average">3 stars</label>
+                                    <input type="radio" id="first-rate4" name="review[rating]" value="4" />
+                                    <label for="first-rate4" title="Very good">4 stars</label>
+                                    <input type="radio" id="first-rate5" name="review[rating]" value="5" />
+                                    <label for="first-rate5" title="Amazing">5 stars</label>
+                                </fieldset>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold" for="comment">Comments</label>
+                                <textarea class="form-control" name="review[comment]" id="comment" rows="4" required placeholder="Share your experience..."></textarea>
+                            </div>
+                            <button class="btn btn-primary px-4" type="submit">
+                                <i class="fa-solid fa-paper-plane me-1"></i>Submit Review
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <% } %>
+
+                <% if (listing.reviews && listing.reviews.length) { %>
+                <div class="mb-4">
+                    <h4 class="mb-3">
+                        <i class="fa-solid fa-comments me-2 text-primary"></i>
+                        <strong>All Reviews</strong>
+                        <span class="badge bg-secondary ms-2"><%= listing.reviews.length %></span>
+                    </h4>
+                    <div class="row g-3">
+                    <% listing.reviews.forEach(review => { %>
+                        <div class="col-12 col-lg-6">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
+                                    <span class="fw-semibold text-primary">@<%= review.author.username %></span>
+                                    <span class="starability-result" data-rating=<%= review.rating %>></span>
+                                </div>
+                                <div class="card-body p-3">
+                                    <p class="card-text mb-0"><%= review.comment %></p>
+                                </div>
+                                <% if(currUser && review.author._id.equals(currUser._id)) { %>
+                                <div class="card-footer bg-transparent border-0 pt-0 pb-3 px-3">
+                                    <form class="m-0" action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE" method="post">
+                                        <button class="btn btn-sm btn-outline-danger" type="submit">
+                                            <i class="fa-solid fa-trash me-1"></i>Delete
+                                        </button>
+                                    </form>
+                                </div>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }) %>
+                    </div>
+                </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Map Section -->
+<div class="container-fluid px-2 px-md-3 px-lg-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-10 col-xl-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-0">
+                    <h3 class="text-center mb-3 p-3 pb-0">
+                        <i class="fa-solid fa-map-location-dot me-2 text-primary"></i>Where you'll be
+                    </h3>
+                    <div id="map" style="height: 400px; width: 100%; border-radius: 0 0 0.375rem 0.375rem;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fixed booking script - removed disabled state from button, proper date validation -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Map initialization
+    const listingData = {
+        geometry: <%- JSON.stringify(listing.geometry || null) %>,
+        title: "<%= listing.title.replace(/"/g, '\\"') %>",
+        location: "<%= listing.location.replace(/"/g, '\\"') %>",
+        country: "<%= listing.country.replace(/"/g, '\\"') %>"
+    };
+
+    const map = L.map('map', { center: [20, 0], zoom: 2 });
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OSM &copy; CARTO',
+        subdomains: 'abcd',
+        maxZoom: 19
+    }).addTo(map);
+
+    function addMarkerAndSetView(lat, lon, title, location, country) {
+        map.setView([lat, lon], 13);
+        L.marker([lat, lon])
+            .addTo(map)
+            .bindPopup('<b>' + title + '</b><br>' + location + ', ' + country)
+            .openPopup();
+    }
+
+    if (listingData.geometry && listingData.geometry.type === 'Point' && Array.isArray(listingData.geometry.coordinates)) {
+        const lon = listingData.geometry.coordinates[0];
+        const lat = listingData.geometry.coordinates[1];
+        addMarkerAndSetView(lat, lon, listingData.title, listingData.location, listingData.country);
+    } else if (listingData.location && listingData.country) {
+        const q = encodeURIComponent(listingData.location + ', ' + listingData.country);
+        fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + q, {
+            headers: { 'User-Agent': 'StayHive-app/1.0' }
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data[0]) {
+                addMarkerAndSetView(parseFloat(data[0].lat), parseFloat(data[0].lon), listingData.title, listingData.location, listingData.country);
+            }
+        })
+        .catch(function() { map.setView([20, 0], 2); });
+    }
+
+    // Booking form logic
+    const checkInEl = document.getElementById('checkIn');
+    const checkOutEl = document.getElementById('checkOut');
+    const guestsEl = document.getElementById('guests');
+    const bookBtn = document.getElementById('bookBtn');
+    const pricingPreview = document.getElementById('pricingPreview');
+    const pricingDetails = document.getElementById('pricingDetails');
+    const listingId = '<%= listing._id %>';
+    const basePrice = <%= listing.price %>;
+
+    if (!checkInEl || !checkOutEl || !bookBtn) return;
+
+    // Set min date for check-in
+    const today = new Date().toISOString().split('T')[0];
+    checkInEl.min = today;
+
+    // Update check-out min when check-in changes
+    checkInEl.addEventListener('change', function() {
+        if (this.value) {
+            const nextDay = new Date(this.value);
+            nextDay.setDate(nextDay.getDate() + 1);
+            checkOutEl.min = nextDay.toISOString().split('T')[0];
+            if (checkOutEl.value && checkOutEl.value <= this.value) {
+                checkOutEl.value = '';
+            }
+        }
+        updatePricing();
+    });
+
+    checkOutEl.addEventListener('change', updatePricing);
+    guestsEl.addEventListener('change', updatePricing);
+
+    function updatePricing() {
+        if (!checkInEl.value || !checkOutEl.value) {
+            pricingPreview.classList.add('d-none');
+            bookBtn.innerHTML = '<i class="fa-solid fa-credit-card me-1"></i>Reserve & Pay';
+            return;
+        }
+        
+        bookBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>Checking...';
+        
+        fetch('/bookings/' + listingId + '/check-availability?checkIn=' + checkInEl.value + '&checkOut=' + checkOutEl.value + '&guests=' + guestsEl.value)
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.available) {
+                    bookBtn.innerHTML = '<i class="fa-solid fa-credit-card me-1"></i>Reserve & Pay ₹' + data.pricing.total.toLocaleString('en-IN');
+                    
+                    pricingPreview.classList.remove('d-none');
+                    var html = '<div class="d-flex justify-content-between mb-2">' +
+                        '<span>₹' + data.pricing.baseNightlyRate.toLocaleString('en-IN') + ' × ' + data.pricing.nights + ' ' + (data.pricing.pricingUnit || 'night') + 's</span>' +
+                        '<span>₹' + data.pricing.basePrice.toLocaleString('en-IN') + '</span></div>';
+                    
+                    if (data.pricing.seasonalAdjustment && data.pricing.seasonalAdjustment !== 0) {
+                        html += '<div class="d-flex justify-content-between mb-2 ' + (data.pricing.seasonalAdjustment > 0 ? 'text-warning' : 'text-success') + '">' +
+                            '<span>Seasonal adjustment</span>' +
+                            '<span>' + (data.pricing.seasonalAdjustment > 0 ? '+' : '') + '₹' + Math.abs(data.pricing.seasonalAdjustment).toLocaleString('en-IN') + '</span></div>';
+                    }
+                    
+                    html += '<div class="d-flex justify-content-between mb-2">' +
+                        '<span>Service fee</span>' +
+                        '<span>₹' + data.pricing.serviceFee.toLocaleString('en-IN') + '</span></div>' +
+                        '<hr><div class="d-flex justify-content-between fw-bold">' +
+                        '<span>Total</span>' +
+                        '<span class="text-primary">₹' + data.pricing.total.toLocaleString('en-IN') + '</span></div>';
+                    
+                    pricingDetails.innerHTML = html;
+                } else {
+                    bookBtn.innerHTML = '<i class="fa-solid fa-times-circle me-1"></i>Not Available';
+                    pricingPreview.classList.remove('d-none');
+                    pricingDetails.innerHTML = '<div class="text-danger"><i class="fa-solid fa-exclamation-triangle me-2"></i>' + (data.error || 'These dates are not available') + '</div>';
+                }
+            })
+            .catch(function(err) {
+                console.error('Pricing error:', err);
+                bookBtn.innerHTML = '<i class="fa-solid fa-credit-card me-1"></i>Reserve & Pay';
+            });
+    }
+});
+</script>
