@@ -132,15 +132,6 @@ or (recommended)
 
 nodemon app.js
 
-🔥 Future Enhancements
-
-✨ User authentication (Login/Register)
-✨ Wishlist / Save listing
-✨ Booking system + rental request
-✨ Payment gateway integration
-✨ Admin panel for managing rentals & reviews
-✨ Google Maps integration for locations
-
 👨‍💻 Author
 
 Sagar (CodeManBist)
