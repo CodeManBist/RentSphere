@@ -40,7 +40,7 @@ Tech stack
 - Styling: CSS + Bootstrap
 
 Live demo
-If a live demo is available it is listed in the repository README (example: https://project1-2tfo.onrender.com/listings). If you run the app locally you can access it at http://localhost:3000 by default.
+If a live demo is available it is listed in the repository README (example: https://project1-2tfo.onrender.com/listings). If you run the app locally you can access it at http://localhost:3000/listings by default.
 
 Project structure (high level)
 RentSphere/
