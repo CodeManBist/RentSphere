@@ -7,7 +7,7 @@ Unlike normal rental websites, RentSphere includes a **Smart Chatbot Assistant**
 ---
 
 ## 🚀 Live Demo
-🔗 (Add your deployed link here)
+🔗 https://project1-2tfo.onrender.com/listings
 
 ---
 
