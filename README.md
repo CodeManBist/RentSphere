@@ -128,7 +128,21 @@ CLOUD_API_SECRET=your_cloudinary_api_secret
 4️⃣ Start the server
 node app.js
 
-
 or (recommended)
 
 nodemon app.js
+
+🔥 Future Enhancements
+
+✨ User authentication (Login/Register)
+✨ Wishlist / Save listing
+✨ Booking system + rental request
+✨ Payment gateway integration
+✨ Admin panel for managing rentals & reviews
+✨ Google Maps integration for locations
+
+👨‍💻 Author
+
+Sagar (CodeManBist)
+Full Stack Developer | MERN | Node.js | Express | MongoDB
+🔗 GitHub: https://github.com/CodeManBist
