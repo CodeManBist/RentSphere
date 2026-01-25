@@ -1,6 +1,9 @@
-# 🏠 RentSphere — Smart Multi-Category Rental Website
+#  🏠 RentSphere — Smart Multi-Category Rental Website
 
-RentSphere is a full-stack multi-category rental platform built with Node.js, Express, MongoDB and EJS. It provides listing discovery, advanced filters, reviews, booking support, image uploads (Cloudinary), season-based pricing and an in-app chatbot assistant. This README replaces and improves the existing README with clearer setup, usage, and deployment instructions.
+RentSphere is a full‑stack rental platform built with Node.js, Express, MongoDB and EJS. It supports multi‑category listings, search and filters, bookings and availability records, user accounts via Passport, reviews, and Cloudinary image uploads. A seeder is included to populate demo data.
+
+## About
+RentSphere is designed to be a comprehensive solution for users looking for a wide range of rental services, facilitating a user-friendly interface and efficient management of listings. Its core features allow users to access various rental categories, making it suitable for both private and commercial use. 
 
 Table of Contents
 - Features
@@ -40,7 +43,7 @@ Tech stack
 - Styling: CSS + Bootstrap
 
 Live demo
-If a live demo is available it is listed in the repository README (example: https://project1-2tfo.onrender.com/listings). If you run the app locally you can access it at http://localhost:3000/listings by default.
+If a live demo is available it is listed in the repository README (example: https://project1-2tfo.onrender.com/listings). If you run the app locally you can access it at http://localhost:3000 (or the port you set in .env).
 
 Project structure (high level)
 RentSphere/
