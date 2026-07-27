@@ -312,4 +312,3 @@ graph LR
 
 If a live demo is available it is listed in the repository README (example: https://project1-2tfo.onrender.com/listings). If you run the app locally you can access it at http://localhost:3000/listings by default. <cite repo="CodeManBist/RentSphere" path="README.md" start
 
-```
